@@ -1,2 +1,0 @@
-# SohojCoaching
-470 470 470 

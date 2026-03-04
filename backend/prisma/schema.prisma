@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model to represent both Students and Teachers for FK references.
+// (You can split these if you have separate tables, but role-based is common)
+model User {
+  id                  String               @id @default(uuid()) @db.Uuid
+  name                String
+  email               String               @unique
+  role                String               // e.g., 'student' or 'teacher'
+  enrollments         Enrollment[]
+  teacherAssignments  TeacherAssignment[]
+
+  @@map("users")
+}
+
+model Batch {
+  id                  String               @id @default(uuid()) @db.Uuid
+  name                String
+  course              String
+  enrollments         Enrollment[]
+  teacherAssignments  TeacherAssignment[]
+
+  @@map("batches")
+}
+
+enum EnrollmentStatus {
+  active
+  dropped
+  completed
+}
+
+model Enrollment {
+  id         String           @id @default(uuid()) @db.Uuid
+  studentId  String           @db.Uuid @map("student_id")
+  batchId    String           @db.Uuid @map("batch_id")
+  status     EnrollmentStatus @default(active)
+  enrolledAt DateTime         @default(now()) @map("enrolled_at")
+
+  student    User             @relation(fields: [studentId], references: [id])
+  batch      Batch            @relation(fields: [batchId], references: [id])
+
+  @@unique([studentId, batchId])
+  @@map("enrollments")
+}
+
+model TeacherAssignment {
+  id         String   @id @default(uuid()) @db.Uuid
+  teacherId  String   @db.Uuid @map("teacher_id")
+  batchId    String   @db.Uuid @map("batch_id")
+  role       String
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  teacher    User     @relation(fields: [teacherId], references: [id])
+  batch      Batch    @relation(fields: [batchId], references: [id])
+
+  @@map("teacher_assignments")
+}
