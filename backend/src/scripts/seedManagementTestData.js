@@ -18,6 +18,7 @@ async function ensureBatch(name, course) {
   });
 }
 
+
 async function main() {
   const students = [
     { name: 'Ayesha Rahman', email: 'ayesha.student@sohojcoaching.test', role: 'student' },
