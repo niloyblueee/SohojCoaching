@@ -16,6 +16,7 @@ model User {
   role                String               // e.g., 'student' or 'teacher'
   enrollments         Enrollment[]
   teacherAssignments  TeacherAssignment[]
+  uploadedMaterials   StudyMaterial[]
 
   @@map("users")
 }
@@ -26,6 +27,7 @@ model Batch {
   course              String
   enrollments         Enrollment[]
   teacherAssignments  TeacherAssignment[]
+  studyMaterials      StudyMaterial[]
 
   @@map("batches")
 }
@@ -61,4 +63,21 @@ model TeacherAssignment {
   batch      Batch    @relation(fields: [batchId], references: [id])
 
   @@map("teacher_assignments")
+}
+
+model StudyMaterial {
+  id         String   @id @db.Uuid
+  batchId    String   @db.Uuid @map("batch_id")
+  fileName   String   @map("file_name")
+  fileType   String   @map("file_type")
+  storageUrl String   @map("storage_url")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  uploadedBy String   @db.Uuid @map("uploaded_by")
+
+  batch      Batch    @relation(fields: [batchId], references: [id])
+  uploader   User     @relation(fields: [uploadedBy], references: [id])
+
+  @@index([batchId])
+  @@index([uploadedBy])
+  @@map("study_materials")
 }
