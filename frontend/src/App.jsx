@@ -20,7 +20,7 @@ function App() {
       
       <Routes>
         <Route path="/" element={<h2>Home Page</h2>} />
-        <Route path="/management" element={<ManagementDashboard />} /> // Niloy 
+        <Route path="/management" element={<ManagementDashboard />} /> // Niloy FR2 & FR4
         <Route path="/material-teacher-view" element={<MaterialTeacherView />} /> // Niloy FR-19
         <Route path="/material-student-view" element={<MaterialStudentView />} /> // Niloy FR-20
         <Route path="/script-upload-view" element={<ScriptUploadView />} /> // Niloy FR-17
