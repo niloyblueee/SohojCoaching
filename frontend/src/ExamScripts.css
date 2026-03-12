@@ -1,0 +1,291 @@
+/* ─── ExamScripts.css  (FR-17 / FR-18) ──────────────────────────────────── */
+/* Shared by ScriptUploadView (/script-upload-view) and MyScriptsView (/my-scripts) */
+
+.scripts-page {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 20px 32px;
+  color: #e7ecf3;
+}
+
+.scripts-page h2 {
+  margin-bottom: 6px;
+  font-size: 1.6rem;
+}
+
+.scripts-disclaimer {
+  margin: 0 0 20px;
+  color: #9fb0ca;
+  font-size: 0.87rem;
+  line-height: 1.5;
+}
+
+/* ── Panel card ─────────────────────────────────────────────────────────── */
+.scripts-panel {
+  background: #1a2333;
+  border: 1px solid #2e3a52;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+
+.scripts-panel h3 {
+  margin: 0 0 14px;
+  font-size: 1.1rem;
+  color: #cfdbf5;
+}
+
+.panel-sub {
+  font-weight: 400;
+  color: #7a93c0;
+}
+
+/* ── Two-column grid ────────────────────────────────────────────────────── */
+.scripts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 2px;
+}
+
+/* ── Field block ────────────────────────────────────────────────────────── */
+.field-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.field-block label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #c8d3e6;
+}
+
+.field-block input,
+.field-block select,
+.student-search,
+.student-list {
+  background: #111827;
+  border: 1px solid #3a4965;
+  border-radius: 8px;
+  color: #e7ecf3;
+  padding: 10px;
+  font-size: 0.93rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field-block input:focus,
+.field-block select:focus,
+.student-search:focus,
+.student-list:focus {
+  border-color: #4463ff;
+}
+
+.student-search {
+  margin-bottom: -2px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.student-list {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top-color: #1e2d44;
+  overflow-y: auto;
+}
+
+/* ── Drag-and-drop zone ─────────────────────────────────────────────────── */
+.dropzone {
+  border: 2px dashed #3a4965;
+  border-radius: 10px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  color: #9fb0ca;
+  margin-bottom: 14px;
+  user-select: none;
+}
+
+.dropzone:hover,
+.dropzone:focus {
+  border-color: #4463ff;
+  background: rgba(68, 99, 255, 0.06);
+  outline: none;
+}
+
+.dropzone--over {
+  border-color: #4463ff;
+  background: rgba(68, 99, 255, 0.1);
+}
+
+.dropzone--filled {
+  border-color: #3dba7a;
+  background: rgba(61, 186, 122, 0.07);
+  color: #e7ecf3;
+}
+
+.dropzone-filename {
+  font-size: 0.95rem;
+  word-break: break-all;
+  margin: 0;
+}
+
+.dropzone-prompt {
+  font-size: 1rem;
+  margin: 0 0 4px;
+  color: #c8d3e6;
+}
+
+.dropzone-sub {
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+/* ── Progress bar ───────────────────────────────────────────────────────── */
+.progress-wrap {
+  position: relative;
+  height: 8px;
+  background: #111827;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4463ff, #7a99ff);
+  border-radius: 99px;
+  transition: width 0.35s ease;
+}
+
+.progress-label {
+  position: absolute;
+  right: 0;
+  top: -18px;
+  font-size: 0.75rem;
+  color: #7a93c0;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+.primary-btn {
+  background: linear-gradient(180deg, #4463ff, #3654e5);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.93rem;
+  width: fit-content;
+  transition: filter 0.15s;
+}
+
+.primary-btn:hover  { filter: brightness(1.1); }
+.primary-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.danger-btn {
+  background: #b0334a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+.danger-btn:hover { background: #9e2a40; }
+
+.view-btn {
+  background: linear-gradient(180deg, #2d6fe8, #245fd1);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: filter 0.15s;
+}
+.view-btn:hover { filter: brightness(1.1); }
+
+.download-btn {
+  background: linear-gradient(180deg, #2a9d5c, #228a4f);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: filter 0.15s;
+}
+.download-btn:hover { filter: brightness(1.1); }
+
+.action-cell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ── Table ──────────────────────────────────────────────────────────────── */
+.scripts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scripts-table th,
+.scripts-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #2d3a53;
+  font-size: 0.91rem;
+}
+
+.scripts-table th {
+  background: #111827;
+  color: #cfdbf5;
+  font-weight: 600;
+}
+
+.scripts-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Helper text ────────────────────────────────────────────────────────── */
+.status-text {
+  color: #89a4ff;
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+
+.empty-text {
+  color: #9fb0ca;
+  font-size: 0.9rem;
+}
+
+.hint-text {
+  font-size: 0.8rem;
+  color: #7a93c0;
+}
+
+.security-note {
+  color: #9fb0ca;
+  margin-top: 2px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .scripts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-cell {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+}

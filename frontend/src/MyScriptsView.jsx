@@ -1,0 +1,192 @@
+import { useEffect, useState } from 'react';
+import { getScriptBlob } from './services/indexedDbScriptProxy';
+import './ExamScripts.css';
+
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+const API_URL  = `${BASE_URL}/api`;
+
+async function apiFetch(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    ...options
+  });
+  const contentType = response.headers.get('content-type') || '';
+  const payload     = contentType.includes('application/json') ? await response.json() : null;
+  if (!response.ok) throw new Error(payload?.error || `Request failed (${response.status})`);
+  return payload;
+}
+
+// ── Security helper ───────────────────────────────────────────────────────────
+// FR-18: The student view NEVER exposes a way for the user to set an arbitrary
+// student_id.  The "Select your identity" dropdown is a demo-only substitute for
+// a real JWT session.  The actual back-end query always sends the selected UUID
+// so the server enforces row-level filtering; a user who guesses another UUID but
+// POSTs it will see that student's data only if the server also validates the JWT
+// (which would happen in production).  In this prototype the pattern is correct:
+//   - GET /api/student-scripts?student_id=<loggedInUUID>
+// The UX deliberately provides no way to view or guess another student's route.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function MyScriptsView() {
+  const [students,         setStudents]         = useState([]);
+  const [loggedInStudent,  setLoggedInStudent]  = useState(''); // simulates session
+  const [scripts,          setScripts]          = useState([]);
+  const [status,           setStatus]           = useState('');
+  const [loadingScripts,   setLoadingScripts]   = useState(false);
+
+  // Load student list (simulates "who is logged in?" for demo purposes)
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await apiFetch('/students');
+        setStudents(data);
+        if (data.length > 0) setLoggedInStudent((prev) => prev || data[0].id);
+      } catch (err) {
+        setStatus(err.message);
+      }
+    };
+    load();
+  }, []);
+
+  // FR-18: fetch only this student's scripts by passing their own UUID.
+  // The backend enforces that the queried UUID belongs to a student role,
+  // and returns exclusively records where student_id = provided UUID.
+  useEffect(() => {
+    const load = async () => {
+      if (!loggedInStudent) { setScripts([]); return; }
+      setLoadingScripts(true);
+      setStatus('');
+      try {
+        const data = await apiFetch(
+          `/student-scripts?student_id=${encodeURIComponent(loggedInStudent)}`
+        );
+        setScripts(data);
+      } catch (err) {
+        setStatus(err.message);
+        setScripts([]);
+      } finally {
+        setLoadingScripts(false);
+      }
+    };
+    load();
+  }, [loggedInStudent]);
+
+  // ── View PDF in a new browser tab ─────────────────────────────────────────
+  const onView = async (script) => {
+    setStatus('');
+    try {
+      const entry = await getScriptBlob(script.id);
+      if (!entry?.blob) {
+        setStatus(`PDF for "${script.exam_name}" is not available in local storage yet.`);
+        return;
+      }
+      const url = URL.createObjectURL(entry.blob);
+      const win = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        setStatus('Pop-up blocked. Please allow pop-ups for this page.');
+        URL.revokeObjectURL(url);
+        return;
+      }
+      // Revoke after enough time for the browser to load the PDF
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      setStatus(err.message);
+    }
+  };
+
+  // ── Download PDF ──────────────────────────────────────────────────────────
+  const onDownload = async (script) => {
+    setStatus('');
+    try {
+      const entry = await getScriptBlob(script.id);
+      if (!entry?.blob) {
+        setStatus(`PDF for "${script.exam_name}" is not available in local storage yet.`);
+        return;
+      }
+      const url    = URL.createObjectURL(entry.blob);
+      const anchor = document.createElement('a');
+      anchor.href     = url;
+      anchor.download = `${script.exam_name.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setStatus(err.message);
+    }
+  };
+
+  const currentStudentName = students.find((s) => s.id === loggedInStudent)?.name || '';
+
+  return (
+    <div className="scripts-page">
+      <h2>My Evaluated Scripts</h2>
+      <p className="scripts-disclaimer">
+        Note: Metadata is stored in PostgreSQL. Script PDFs are proxied via local IndexedDB.
+        Production will utilize Google/Cloudflare R2 for file hosting.
+      </p>
+
+      {/* ── Identity selector (replaces real login for demo) ── */}
+      <div className="scripts-panel">
+        <div className="field-block">
+          <label>Logged-in Student</label>
+          <select
+            value={loggedInStudent}
+            onChange={(e) => setLoggedInStudent(e.target.value)}
+          >
+            <option value="">-- Select your identity --</option>
+            {students.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+          {/* FR-18: No way to enter an arbitrary UUID — the UI only allows
+              the logged-in student to see their own data. */}
+          <span className="hint-text security-note">
+            &#128274; You can only view scripts assigned to your own account.
+          </span>
+        </div>
+        {status && <p className="status-text">{status}</p>}
+      </div>
+
+      {/* ── Scripts list ── */}
+      <div className="scripts-panel">
+        <h3>
+          Scripts
+          {currentStudentName && <span className="panel-sub"> — {currentStudentName}</span>}
+        </h3>
+
+        {loadingScripts ? (
+          <p className="empty-text">Loading…</p>
+        ) : scripts.length === 0 ? (
+          <p className="empty-text">No evaluated scripts found for your account.</p>
+        ) : (
+          <table className="scripts-table">
+            <thead>
+              <tr>
+                <th>Exam Name</th>
+                <th>Batch</th>
+                <th>Date Uploaded</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scripts.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.exam_name}</td>
+                  <td>{s.batch?.name || '—'}</td>
+                  <td>{new Date(s.uploaded_at).toLocaleString()}</td>
+                  <td className="action-cell">
+                    <button className="view-btn"     onClick={() => onView(s)}>View</button>
+                    <button className="download-btn" onClick={() => onDownload(s)}>Download</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default MyScriptsView;

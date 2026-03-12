@@ -445,6 +445,171 @@ app.get('/api/batches/:batchId/members', async (req, res) => {
   }
 });
 
+// ─── FR-17 / FR-18: Exam Script Management ───────────────────────────────────
+
+// POST /api/student-scripts
+// Teacher saves a graded script for a specific student in a batch.
+// Only PDF is accepted; the blob is stored in the client's IndexedDB using the returned id.
+app.post('/api/student-scripts', async (req, res) => {
+  const { student_id, batch_id, exam_name, uploaded_by } = req.body;
+
+  if (!isUuid(student_id) || !isUuid(batch_id) || !isUuid(uploaded_by)) {
+    return res.status(400).json({ error: 'student_id, batch_id, and uploaded_by must be valid UUIDs.' });
+  }
+
+  if (!exam_name || !String(exam_name).trim()) {
+    return res.status(400).json({ error: 'exam_name is required.' });
+  }
+
+  try {
+    // Verify uploader is a teacher
+    const uploader = await prisma.user.findUnique({
+      where: { id: uploaded_by },
+      select: { id: true, role: true }
+    });
+    if (!uploader) return res.status(404).json({ error: 'Uploader not found.' });
+    if (String(uploader.role).toLowerCase() !== 'teacher') {
+      return res.status(403).json({ error: 'Only teachers can upload exam scripts.' });
+    }
+
+    // Verify target user is a student
+    const student = await prisma.user.findUnique({
+      where: { id: student_id },
+      select: { id: true, role: true }
+    });
+    if (!student) return res.status(404).json({ error: 'Student not found.' });
+    if (String(student.role).toLowerCase() !== 'student') {
+      return res.status(400).json({ error: 'Target user is not a student.' });
+    }
+
+    // Verify the student is actively enrolled in the batch (FR-17)
+    const enrollment = await prisma.enrollment.findFirst({
+      where: { studentId: student_id, batchId: batch_id, status: 'active' },
+      select: { id: true }
+    });
+    if (!enrollment) {
+      return res.status(403).json({ error: 'Student is not actively enrolled in the specified batch.' });
+    }
+
+    const id = randomUUID();
+    const storageUrl = `idb-proxy://student-scripts/${id}`;
+
+    const script = await prisma.studentScript.create({
+      data: {
+        id,
+        studentId: student_id,
+        batchId: batch_id,
+        examName: String(exam_name).trim(),
+        fileType: 'application/pdf',
+        storageUrl,
+        uploadedBy: uploaded_by
+      },
+      select: {
+        id: true, studentId: true, batchId: true, examName: true,
+        fileType: true, storageUrl: true, uploadedAt: true, uploadedBy: true
+      }
+    });
+
+    res.status(201).json({
+      id: script.id,
+      student_id: script.studentId,
+      batch_id: script.batchId,
+      exam_name: script.examName,
+      file_type: script.fileType,
+      storage_url: script.storageUrl,
+      uploaded_at: script.uploadedAt,
+      uploaded_by: script.uploadedBy
+    });
+  } catch (error) {
+    if (error.code === 'P2003') return res.status(400).json({ error: 'Invalid FK: student_id, batch_id, or uploaded_by.' });
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+// GET /api/student-scripts
+// Two modes:
+//   ?student_id=<uuid>  → FR-18: student-scoped query; only returns that student's own scripts.
+//   ?batch_id=<uuid>    → Teacher view: all scripts for a batch (no student restriction).
+// At least one parameter is required so that the endpoint never returns the full dataset.
+app.get('/api/student-scripts', async (req, res) => {
+  const { student_id, batch_id } = req.query;
+
+  if (!student_id && !batch_id) {
+    return res.status(400).json({ error: 'Either student_id or batch_id must be provided.' });
+  }
+  if (student_id && !isUuid(student_id)) {
+    return res.status(400).json({ error: 'Invalid UUID for student_id.' });
+  }
+  if (batch_id && !isUuid(batch_id)) {
+    return res.status(400).json({ error: 'Invalid UUID for batch_id.' });
+  }
+
+  const where = {};
+  if (student_id) where.studentId = student_id;
+  if (batch_id)   where.batchId   = batch_id;
+
+  try {
+    // FR-18: when querying by student_id, confirm the user is actually a student
+    if (student_id) {
+      const student = await prisma.user.findUnique({
+        where: { id: student_id },
+        select: { id: true, role: true }
+      });
+      if (!student) return res.status(404).json({ error: 'Student not found.' });
+      if (String(student.role).toLowerCase() !== 'student') {
+        return res.status(403).json({ error: 'Access denied: only students may query by student_id.' });
+      }
+    }
+
+    const scripts = await prisma.studentScript.findMany({
+      where,
+      include: {
+        student:  { select: { id: true, name: true } },
+        batch:    { select: { id: true, name: true, course: true } },
+        uploader: { select: { id: true, name: true } }
+      },
+      orderBy: { uploadedAt: 'desc' }
+    });
+
+    res.json(scripts.map((s) => ({
+      id:          s.id,
+      student_id:  s.studentId,
+      batch_id:    s.batchId,
+      exam_name:   s.examName,
+      file_type:   s.fileType,
+      storage_url: s.storageUrl,
+      uploaded_at: s.uploadedAt,
+      uploaded_by: s.uploadedBy,
+      student:     s.student,
+      batch:       s.batch,
+      uploader:    s.uploader
+    })));
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+// DELETE /api/student-scripts/:id
+// Teachers can remove a script record from Postgres.
+// The client is responsible for also removing the blob from IndexedDB.
+app.delete('/api/student-scripts/:id', async (req, res) => {
+  const { id } = req.params;
+
+  if (!isUuid(id)) {
+    return res.status(400).json({ error: 'Invalid UUID for script id.' });
+  }
+
+  try {
+    await prisma.studentScript.delete({ where: { id } });
+    res.json({ message: 'Script deleted.' });
+  } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ error: 'Script not found.' });
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {

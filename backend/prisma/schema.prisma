@@ -17,6 +17,8 @@ model User {
   enrollments         Enrollment[]
   teacherAssignments  TeacherAssignment[]
   uploadedMaterials   StudyMaterial[]
+  studentScripts      StudentScript[]      @relation("StudentScripts")
+  uploadedScripts     StudentScript[]      @relation("ScriptUploader")
 
   @@map("users")
 }
@@ -28,6 +30,7 @@ model Batch {
   enrollments         Enrollment[]
   teacherAssignments  TeacherAssignment[]
   studyMaterials      StudyMaterial[]
+  studentScripts      StudentScript[]
 
   @@map("batches")
 }
@@ -80,4 +83,27 @@ model StudyMaterial {
   @@index([batchId])
   @@index([uploadedBy])
   @@map("study_materials")
+}
+
+// FR-17/FR-18: Exam Script Management
+// Each evaluated PDF is linked to exactly one student and one batch.
+// The binary blob lives in IndexedDB (proxy) / R2 (production); only metadata is stored here.
+model StudentScript {
+  id         String   @id @db.Uuid
+  studentId  String   @db.Uuid @map("student_id")
+  batchId    String   @db.Uuid @map("batch_id")
+  examName   String   @map("exam_name")
+  fileType   String   @default("application/pdf") @map("file_type")
+  storageUrl String   @map("storage_url")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  uploadedBy String   @db.Uuid @map("uploaded_by")
+
+  student    User     @relation("StudentScripts", fields: [studentId], references: [id])
+  batch      Batch    @relation(fields: [batchId], references: [id])
+  uploader   User     @relation("ScriptUploader", fields: [uploadedBy], references: [id])
+
+  @@index([studentId])
+  @@index([batchId])
+  @@index([uploadedBy])
+  @@map("student_scripts")
 }
