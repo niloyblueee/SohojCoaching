@@ -16,9 +16,9 @@ function App() {
       
       <Routes>
         <Route path="/" element={<h2>Home Page</h2>} />
-        <Route path="/management" element={<ManagementDashboard />} />
-        <Route path="/material-teacher-view" element={<MaterialTeacherView />} />
-        <Route path="/material-student-view" element={<MaterialStudentView />} />
+        <Route path="/management" element={<ManagementDashboard />} /> // Niloy 
+        <Route path="/material-teacher-view" element={<MaterialTeacherView />} /> // Niloy
+        <Route path="/material-student-view" element={<MaterialStudentView />} /> // Niloy
       </Routes>
     </Router>
   );
