@@ -14,6 +14,22 @@ See modular backend structure in:
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DBNAME"
 PORT=3000
 JWT_SECRET="change-this-secret"
+JWT_EXPIRES_IN="8h"
+
+ADMIN_1_ID="admin-001"
+ADMIN_1_NAME="Admin One"
+ADMIN_1_EMAIL="admin1@sohojcoaching.com"
+ADMIN_1_PASSWORD="Admin123!"
+
+ADMIN_2_ID="admin-002"
+ADMIN_2_NAME="Admin Two"
+ADMIN_2_EMAIL="admin2@sohojcoaching.com"
+ADMIN_2_PASSWORD="Admin123!"
+
+ADMIN_3_ID="admin-003"
+ADMIN_3_NAME="Admin Three"
+ADMIN_3_EMAIL="admin3@sohojcoaching.com"
+ADMIN_3_PASSWORD="Admin123!"
 ```
 
 2. Run one command to setup tables:
