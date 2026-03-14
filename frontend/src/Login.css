@@ -1,875 +1,890 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Nunito:wght@400;600;700&display=swap');
 
 :root {
-  --panel-bg: #f5f6fb;
-  --ink: #141838;
-  --muted: #5f6786;
-  --line: #d7deea;
-  --student-a: #04163b;
-  --student-b: #0d3992;
-  --teacher-a: #10322c;
-  --teacher-b: #0d826f;
-  --admin-a: #2f1b3f;
-  --admin-b: #b64b3e;
+    --panel-bg: #f5f6fb;
+    --ink: #141838;
+    --muted: #5f6786;
+    --line: #d7deea;
+    --student-a: #04163b;
+    --student-b: #0d3992;
+    --teacher-a: #10322c;
+    --teacher-b: #0d826f;
+    --admin-a: #2f1b3f;
+    --admin-b: #b64b3e;
 }
 
 #root {
-  min-height: 100vh;
-  min-height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
 }
 
 .login-shell {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-  transition: background 500ms ease;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 500ms ease;
 }
 
 .ambient-layer {
-  position: absolute;
-  inset: -15%;
-  background:
-    radial-gradient(circle at 18% 25%, rgba(255, 255, 255, 0.34), transparent 28%),
-    radial-gradient(circle at 75% 78%, rgba(255, 255, 255, 0.15), transparent 26%),
-    radial-gradient(circle at 86% 22%, rgba(255, 255, 255, 0.28), transparent 18%);
-  filter: blur(10px);
-  pointer-events: none;
+    position: absolute;
+    inset: -15%;
+    background:
+        radial-gradient(circle at 18% 25%, rgba(255, 255, 255, 0.34), transparent 28%),
+        radial-gradient(circle at 75% 78%, rgba(255, 255, 255, 0.15), transparent 26%),
+        radial-gradient(circle at 86% 22%, rgba(255, 255, 255, 0.28), transparent 18%);
+    filter: blur(10px);
+    pointer-events: none;
 }
 
 .role-student {
-  background: linear-gradient(135deg, var(--student-a) 0%, #061b61 45%, var(--student-b) 100%);
+    background: linear-gradient(135deg, var(--student-a) 0%, #061b61 45%, var(--student-b) 100%);
 }
 
 .role-teacher {
-  background: linear-gradient(130deg, var(--teacher-a) 0%, #15584f 42%, var(--teacher-b) 100%);
+    background: linear-gradient(130deg, var(--teacher-a) 0%, #15584f 42%, var(--teacher-b) 100%);
 }
 
 .role-admin {
-  background: linear-gradient(125deg, var(--admin-a) 0%, #5d275f 42%, var(--admin-b) 100%);
+    background: linear-gradient(125deg, var(--admin-a) 0%, #5d275f 42%, var(--admin-b) 100%);
 }
 
 .login-card {
-  width: min(980px, 96vw);
-  min-height: 560px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 26px;
-  overflow: hidden;
-  box-shadow: 0 24px 60px rgba(5, 8, 28, 0.45);
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  position: relative;
-  z-index: 2;
+    width: min(980px, 96vw);
+    min-height: 560px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 26px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(5, 8, 28, 0.45);
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    position: relative;
+    z-index: 2;
 }
 
 .login-pane {
-  padding: 2.2rem 2.1rem;
+    padding: 2.2rem 2.1rem;
 }
 
 .form-pane {
-  background: var(--panel-bg);
-  color: var(--ink);
-  display: flex;
-  flex-direction: column;
+    background: var(--panel-bg);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
 }
 
 .brand {
-  margin: 0;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #3f4f8c;
-  font-family: 'Chakra Petch', sans-serif;
-  font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3f4f8c;
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
 }
 
 .title {
-  margin: 0.6rem 0 1rem;
-  font-size: 1.7rem;
-  font-family: 'Chakra Petch', sans-serif;
-  letter-spacing: 0.02em;
+    margin: 0.6rem 0 1rem;
+    font-size: 1.7rem;
+    font-family: 'Chakra Petch', sans-serif;
+    letter-spacing: 0.02em;
 }
 
 .role-switch {
-  margin-bottom: 1.2rem;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
-  padding: 0.4rem;
-  background: #e9eef8;
-  border-radius: 14px;
+    margin-bottom: 1.2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0.4rem;
+    background: #e9eef8;
+    border-radius: 14px;
 }
 
 .role-select-wrap {
-  display: none;
-  margin-bottom: 1rem;
+    display: none;
+    margin-bottom: 1rem;
 }
 
 .role-select-label {
-  display: inline-block;
-  margin-bottom: 0.4rem;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.86rem;
-  font-weight: 700;
-  color: #4a567f;
+    display: inline-block;
+    margin-bottom: 0.4rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #4a567f;
 }
 
 .role-select {
-  width: 100%;
-  min-height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: #ffffff;
-  color: #1a2142;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  padding: 0.65rem 0.8rem;
+    width: 100%;
+    min-height: 44px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    color: #1a2142;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 0.65rem 0.8rem;
 }
 
 .role-select:focus {
-  border-color: #3f67dc;
-  box-shadow: 0 0 0 3px rgba(88, 126, 241, 0.2);
-  outline: none;
+    border-color: #3f67dc;
+    box-shadow: 0 0 0 3px rgba(88, 126, 241, 0.2);
+    outline: none;
 }
 
 .role-tab {
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: #40548a;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 700;
-  min-height: 44px;
-  padding: 0.6rem 0.4rem;
-  cursor: pointer;
-  transition: transform 220ms ease, background-color 220ms ease, color 220ms ease;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #40548a;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    min-height: 44px;
+    padding: 0.6rem 0.4rem;
+    cursor: pointer;
+    transition: transform 220ms ease, background-color 220ms ease, color 220ms ease;
 }
 
 .role-tab:hover {
-  transform: translateY(-1px);
+    transform: translateY(-1px);
 }
 
 .role-tab.active {
-  background: linear-gradient(120deg, #1a2766, #2f73af);
-  color: #f8faff;
-  box-shadow: 0 8px 20px rgba(39, 85, 140, 0.35);
+    background: linear-gradient(120deg, #1a2766, #2f73af);
+    color: #f8faff;
+    box-shadow: 0 8px 20px rgba(39, 85, 140, 0.35);
 }
 
 .login-form {
-  display: grid;
-  gap: 0.85rem;
-  margin-top: 0.6rem;
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 0.6rem;
 }
 
 .auth-switch {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.45rem;
-  padding: 0.3rem;
-  margin-bottom: 0.2rem;
-  border-radius: 12px;
-  background: #edf2fb;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem;
+    padding: 0.3rem;
+    margin-bottom: 0.2rem;
+    border-radius: 12px;
+    background: #edf2fb;
 }
 
 .auth-switch-btn {
-  border: 0;
-  min-height: 40px;
-  border-radius: 10px;
-  background: transparent;
-  color: #4560a3;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 220ms ease;
+    border: 0;
+    min-height: 40px;
+    border-radius: 10px;
+    background: transparent;
+    color: #4560a3;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 220ms ease;
 }
 
 .auth-switch-btn.active {
-  background: linear-gradient(120deg, #20306d, #2f73af);
-  color: #f8faff;
-  box-shadow: 0 8px 16px rgba(37, 80, 147, 0.28);
+    background: linear-gradient(120deg, #20306d, #2f73af);
+    color: #f8faff;
+    box-shadow: 0 8px 16px rgba(37, 80, 147, 0.28);
 }
 
 .auth-form-shell {
-  animation: authSwap 320ms ease;
+    animation: authSwap 320ms ease;
 }
 
 .login-form input {
-  border: 1px solid var(--line);
-  background: #ffffff;
-  color: #1a2142;
-  border-radius: 999px;
-  padding: 0.78rem 1rem;
-  font-size: 1rem;
-  font-family: 'Nunito', sans-serif;
-  transition: border-color 220ms ease, box-shadow 220ms ease;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    color: #1a2142;
+    border-radius: 999px;
+    padding: 0.78rem 1rem;
+    font-size: 1rem;
+    font-family: 'Nunito', sans-serif;
+    transition: border-color 220ms ease, box-shadow 220ms ease;
 }
 
 .login-form input:focus {
-  border-color: #3f67dc;
-  box-shadow: 0 0 0 3px rgba(88, 126, 241, 0.2);
-  outline: none;
+    border-color: #3f67dc;
+    box-shadow: 0 0 0 3px rgba(88, 126, 241, 0.2);
+    outline: none;
 }
 
 .submit-btn {
-  margin-top: 0.6rem;
-  border: 0;
-  border-radius: 999px;
-  min-height: 48px;
-  padding: 0.8rem 1.2rem;
-  font-size: 0.96rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #ffffff;
-  background: linear-gradient(90deg, #131f60 0%, #235196 100%);
-  font-family: 'Chakra Petch', sans-serif;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 220ms ease, box-shadow 220ms ease;
+    margin-top: 0.6rem;
+    border: 0;
+    border-radius: 999px;
+    min-height: 48px;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.96rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #ffffff;
+    background: linear-gradient(90deg, #131f60 0%, #235196 100%);
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 220ms ease, box-shadow 220ms ease;
 }
 
 .submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(25, 57, 125, 0.32);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(25, 57, 125, 0.32);
 }
 
 .helper-text {
-  margin-top: auto;
-  color: var(--muted);
-  font-size: 0.95rem;
-  font-family: 'Nunito', sans-serif;
+    margin-top: auto;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-family: 'Nunito', sans-serif;
 }
 
 .visual-pane {
-  position: relative;
-  isolation: isolate;
-  color: #f5f8ff;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: hidden;
-  animation: panelReveal 420ms ease;
+    position: relative;
+    isolation: isolate;
+    color: #f5f8ff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+    animation: panelReveal 420ms ease;
 }
 
 .visual-pane::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(circle at 85% 24%, rgba(255, 255, 255, 0.2), transparent 35%),
-    radial-gradient(circle at 18% 78%, rgba(255, 255, 255, 0.16), transparent 30%);
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 85% 24%, rgba(255, 255, 255, 0.2), transparent 35%),
+        radial-gradient(circle at 18% 78%, rgba(255, 255, 255, 0.16), transparent 30%);
 }
 
 .theme-atmosphere {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
 }
 
 .theme-atmosphere::before,
 .theme-atmosphere::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
+    content: '';
+    position: absolute;
+    pointer-events: none;
 }
 
 .role-student .visual-pane {
-  background:
-    linear-gradient(145deg, rgba(2, 18, 59, 0.94), rgba(9, 46, 139, 0.88)),
-    linear-gradient(35deg, rgba(255, 255, 255, 0.06), transparent 50%);
+    background:
+        linear-gradient(145deg, rgba(2, 18, 59, 0.94), rgba(9, 46, 139, 0.88)),
+        linear-gradient(35deg, rgba(255, 255, 255, 0.06), transparent 50%);
 }
 
 .role-student .theme-atmosphere::before {
-  left: -40px;
-  top: 60px;
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  border: 2px dashed rgba(150, 220, 255, 0.4);
-  animation: spinSlow 16s linear infinite;
+    left: -40px;
+    top: 60px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 2px dashed rgba(150, 220, 255, 0.4);
+    animation: spinSlow 16s linear infinite;
 }
 
 .role-student .theme-atmosphere::after {
-  right: 42px;
-  top: 76px;
-  width: 200px;
-  height: 130px;
-  border-radius: 100px;
-  border: 2px solid rgba(183, 232, 255, 0.34);
-  box-shadow:
-    0 0 0 24px rgba(153, 228, 255, 0.09),
-    -110px 84px 0 -72px rgba(204, 244, 255, 0.3),
-    58px 38px 0 -64px rgba(188, 236, 255, 0.22);
-  animation: pulseOrbit 5.2s ease-in-out infinite;
+    right: 42px;
+    top: 76px;
+    width: 200px;
+    height: 130px;
+    border-radius: 100px;
+    border: 2px solid rgba(183, 232, 255, 0.34);
+    box-shadow:
+        0 0 0 24px rgba(153, 228, 255, 0.09),
+        -110px 84px 0 -72px rgba(204, 244, 255, 0.3),
+        58px 38px 0 -64px rgba(188, 236, 255, 0.22);
+    animation: pulseOrbit 5.2s ease-in-out infinite;
 }
 
 .role-teacher .visual-pane {
-  background:
-    linear-gradient(145deg, rgba(11, 57, 48, 0.95), rgba(7, 121, 104, 0.88)),
-    linear-gradient(40deg, rgba(255, 255, 255, 0.08), transparent 50%);
+    background:
+        linear-gradient(145deg, rgba(11, 57, 48, 0.95), rgba(7, 121, 104, 0.88)),
+        linear-gradient(40deg, rgba(255, 255, 255, 0.08), transparent 50%);
 }
 
 .role-teacher .theme-atmosphere::before {
-  left: 14px;
-  top: 36px;
-  width: 235px;
-  height: 150px;
-  border: 1px solid rgba(211, 255, 241, 0.38);
-  border-radius: 14px;
-  background:
-    linear-gradient(rgba(209, 255, 240, 0.2) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(209, 255, 240, 0.15) 1px, transparent 1px);
-  background-size: 28px 28px;
-  animation: chalkShift 9s linear infinite;
+    left: 14px;
+    top: 36px;
+    width: 235px;
+    height: 150px;
+    border: 1px solid rgba(211, 255, 241, 0.38);
+    border-radius: 14px;
+    background:
+        linear-gradient(rgba(209, 255, 240, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(209, 255, 240, 0.15) 1px, transparent 1px);
+    background-size: 28px 28px;
+    animation: chalkShift 9s linear infinite;
 }
 
 .role-teacher .theme-atmosphere::after {
-  right: -26px;
-  bottom: 80px;
-  width: 210px;
-  height: 128px;
-  border-radius: 16px;
-  border: 1px solid rgba(230, 255, 247, 0.35);
-  box-shadow:
-    -20px -18px 0 0 rgba(203, 255, 241, 0.14),
-    -42px -36px 0 0 rgba(203, 255, 241, 0.1),
-    -64px -54px 0 0 rgba(203, 255, 241, 0.07);
-  animation: floatUp 7s ease-in-out infinite;
+    right: -26px;
+    bottom: 80px;
+    width: 210px;
+    height: 128px;
+    border-radius: 16px;
+    border: 1px solid rgba(230, 255, 247, 0.35);
+    box-shadow:
+        -20px -18px 0 0 rgba(203, 255, 241, 0.14),
+        -42px -36px 0 0 rgba(203, 255, 241, 0.1),
+        -64px -54px 0 0 rgba(203, 255, 241, 0.07);
+    animation: floatUp 7s ease-in-out infinite;
 }
 
 .role-admin .visual-pane {
-  background:
-    linear-gradient(145deg, rgba(54, 24, 62, 0.95), rgba(145, 46, 71, 0.88)),
-    linear-gradient(40deg, rgba(255, 255, 255, 0.1), transparent 55%);
+    background:
+        linear-gradient(145deg, rgba(54, 24, 62, 0.95), rgba(145, 46, 71, 0.88)),
+        linear-gradient(40deg, rgba(255, 255, 255, 0.1), transparent 55%);
 }
 
 .role-admin .theme-atmosphere::before {
-  right: 24px;
-  top: 30px;
-  width: 240px;
-  height: 164px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 218, 235, 0.36);
-  background:
-    linear-gradient(90deg, rgba(255, 220, 236, 0.2) 1px, transparent 1px),
-    linear-gradient(rgba(255, 220, 236, 0.14) 1px, transparent 1px);
-  background-size: 24px 24px;
-  box-shadow: 0 0 32px rgba(255, 176, 184, 0.2);
-  animation: pulseOrbit 6s ease-in-out infinite;
+    right: 24px;
+    top: 30px;
+    width: 240px;
+    height: 164px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 218, 235, 0.36);
+    background:
+        linear-gradient(90deg, rgba(255, 220, 236, 0.2) 1px, transparent 1px),
+        linear-gradient(rgba(255, 220, 236, 0.14) 1px, transparent 1px);
+    background-size: 24px 24px;
+    box-shadow: 0 0 32px rgba(255, 176, 184, 0.2);
+    animation: pulseOrbit 6s ease-in-out infinite;
 }
 
 .role-admin .theme-atmosphere::after {
-  left: 26px;
-  bottom: 86px;
-  width: 190px;
-  height: 110px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 225, 239, 0.42);
-  box-shadow:
-    18px 14px 0 -4px rgba(255, 209, 232, 0.18),
-    36px 28px 0 -8px rgba(255, 209, 232, 0.14),
-    54px 42px 0 -12px rgba(255, 209, 232, 0.1);
-  animation: controlSweep 7.2s ease-in-out infinite;
+    left: 26px;
+    bottom: 86px;
+    width: 190px;
+    height: 110px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 225, 239, 0.42);
+    box-shadow:
+        18px 14px 0 -4px rgba(255, 209, 232, 0.18),
+        36px 28px 0 -8px rgba(255, 209, 232, 0.14),
+        54px 42px 0 -12px rgba(255, 209, 232, 0.1);
+    animation: controlSweep 7.2s ease-in-out infinite;
 }
 
 .motif-cloud {
-  display: flex;
-  gap: 0.55rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
 }
 
 .motif-chip {
-  border-radius: 999px;
-  padding: 0.3rem 0.72rem;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.78rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  backdrop-filter: blur(2px);
-  animation: chipFloat 4s ease-in-out infinite;
+    border-radius: 999px;
+    padding: 0.3rem 0.72rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    backdrop-filter: blur(2px);
+    animation: chipFloat 4s ease-in-out infinite;
 }
 
 .motif-chip:nth-child(2) {
-  animation-delay: 300ms;
+    animation-delay: 300ms;
 }
 
 .motif-chip:nth-child(3) {
-  animation-delay: 600ms;
+    animation-delay: 600ms;
 }
 
 .role-student .motif-chip {
-  background: rgba(156, 227, 255, 0.14);
-  color: #d4f5ff;
+    background: rgba(156, 227, 255, 0.14);
+    color: #d4f5ff;
 }
 
 .role-teacher .motif-chip {
-  background: rgba(185, 255, 230, 0.14);
-  color: #dbfff4;
+    background: rgba(185, 255, 230, 0.14);
+    color: #dbfff4;
 }
 
 .role-admin .motif-chip {
-  background: rgba(255, 205, 227, 0.16);
-  color: #ffe5f1;
+    background: rgba(255, 205, 227, 0.16);
+    color: #ffe5f1;
 }
 
 .role-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 52px;
-  width: 52px;
-  border-radius: 50%;
-  font-family: 'Chakra Petch', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(4px);
-  margin-bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 52px;
+    width: 52px;
+    border-radius: 50%;
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(4px);
+    margin-bottom: 1rem;
 }
 
 .visual-pane h1 {
-  margin: 0;
-  font-size: clamp(1.7rem, 3vw, 2.35rem);
-  font-family: 'Chakra Petch', sans-serif;
-  line-height: 1.15;
+    margin: 0;
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-family: 'Chakra Petch', sans-serif;
+    line-height: 1.15;
 }
 
 .visual-pane p {
-  margin: 0.75rem 0 0;
-  max-width: 32ch;
-  font-family: 'Nunito', sans-serif;
-  font-size: 1.02rem;
+    margin: 0.75rem 0 0;
+    max-width: 32ch;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.02rem;
 }
 
 .visual-pane .note {
-  margin-top: 1rem;
-  font-size: 0.95rem;
-  opacity: 0.9;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    opacity: 0.9;
 }
 
 .shape {
-  position: absolute;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  pointer-events: none;
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    pointer-events: none;
 }
 
 .shape-a {
-  width: 210px;
-  height: 210px;
-  right: -52px;
-  top: -52px;
-  border-radius: 38% 62% 46% 54%;
-  animation: drift 10s ease-in-out infinite;
+    width: 210px;
+    height: 210px;
+    right: -52px;
+    top: -52px;
+    border-radius: 38% 62% 46% 54%;
+    animation: drift 10s ease-in-out infinite;
 }
 
 .shape-b {
-  width: 140px;
-  height: 140px;
-  left: 10%;
-  top: 16%;
-  border-radius: 48% 52% 38% 62%;
-  animation: drift 8s ease-in-out infinite reverse;
+    width: 140px;
+    height: 140px;
+    left: 10%;
+    top: 16%;
+    border-radius: 48% 52% 38% 62%;
+    animation: drift 8s ease-in-out infinite reverse;
 }
 
 .shape-c {
-  width: 96px;
-  height: 96px;
-  right: 18%;
-  bottom: 16%;
-  border-radius: 22px;
-  transform: rotate(22deg);
-  animation: floatUp 6s ease-in-out infinite;
+    width: 96px;
+    height: 96px;
+    right: 18%;
+    bottom: 16%;
+    border-radius: 22px;
+    transform: rotate(22deg);
+    animation: floatUp 6s ease-in-out infinite;
 }
 
 .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
 
 @keyframes panelReveal {
-  from {
-    transform: translateX(14px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+    from {
+        transform: translateX(14px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 @keyframes drift {
-  0% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(4deg);
-  }
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-10px) rotate(4deg);
+    }
+
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
 }
 
 @keyframes floatUp {
-  0% {
-    transform: rotate(22deg) translateY(0);
-  }
-  50% {
-    transform: rotate(16deg) translateY(-9px);
-  }
-  100% {
-    transform: rotate(22deg) translateY(0);
-  }
+    0% {
+        transform: rotate(22deg) translateY(0);
+    }
+
+    50% {
+        transform: rotate(16deg) translateY(-9px);
+    }
+
+    100% {
+        transform: rotate(22deg) translateY(0);
+    }
 }
 
 @keyframes spinSlow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes pulseOrbit {
-  0% {
-    transform: scale(1) translateY(0);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.04) translateY(-4px);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 0.8;
-  }
+    0% {
+        transform: scale(1) translateY(0);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.04) translateY(-4px);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 0.8;
+    }
 }
 
 @keyframes chalkShift {
-  0% {
-    background-position: 0 0, 0 0;
-  }
-  100% {
-    background-position: 0 28px, 28px 0;
-  }
+    0% {
+        background-position: 0 0, 0 0;
+    }
+
+    100% {
+        background-position: 0 28px, 28px 0;
+    }
 }
 
 @keyframes controlSweep {
-  0% {
-    transform: translateX(0);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translateX(10px);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 0.8;
-  }
+    0% {
+        transform: translateX(0);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: translateX(10px);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 0.8;
+    }
 }
 
 @keyframes chipFloat {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-  100% {
-    transform: translateY(0);
-  }
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
 }
 
 @keyframes authSwap {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @media (max-width: 900px) {
-  .login-shell {
-    place-items: stretch;
-    align-items: center;
-  }
+    .login-shell {
+        place-items: stretch;
+        align-items: center;
+    }
 
-  .login-card {
-    grid-template-columns: 1fr;
-    min-height: auto;
-    width: min(680px, 100%);
-  }
+    .login-card {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        width: min(680px, 100%);
+    }
 
-  .visual-pane {
-    order: 1;
-  }
+    .visual-pane {
+        order: 1;
+    }
 
-  .form-pane {
-    order: 2;
-  }
+    .form-pane {
+        order: 2;
+    }
 
-  .visual-pane {
-    min-height: 250px;
-    justify-content: center;
-  }
+    .visual-pane {
+        min-height: 250px;
+        justify-content: center;
+    }
 
-  .theme-atmosphere::before,
-  .theme-atmosphere::after {
-    transform: scale(0.88);
-    transform-origin: top right;
-  }
+    .theme-atmosphere::before,
+    .theme-atmosphere::after {
+        transform: scale(0.88);
+        transform-origin: top right;
+    }
 
-  .helper-text {
-    margin-top: 1.1rem;
-  }
+    .helper-text {
+        margin-top: 1.1rem;
+    }
 }
 
 @media (max-width: 720px) {
-  .login-shell {
-    padding: 0.9rem;
-  }
+    .login-shell {
+        padding: 0.9rem;
+    }
 
-  .login-card {
-    border-radius: 18px;
-  }
+    .login-card {
+        border-radius: 18px;
+    }
 
-  .login-pane {
-    padding: 1.25rem 1rem;
-  }
+    .login-pane {
+        padding: 1.25rem 1rem;
+    }
 
-  .title {
-    font-size: 1.45rem;
-    margin-bottom: 0.9rem;
-  }
+    .title {
+        font-size: 1.45rem;
+        margin-bottom: 0.9rem;
+    }
 
-  .role-switch {
-    display: none;
-  }
+    .role-switch {
+        display: none;
+    }
 
-  .role-select-wrap {
-    display: block;
-  }
+    .role-select-wrap {
+        display: block;
+    }
 
-  .login-form {
-    gap: 0.75rem;
-  }
+    .login-form {
+        gap: 0.75rem;
+    }
 
-  .auth-switch {
-    margin-top: 0.2rem;
-    margin-bottom: 0.1rem;
-  }
+    .auth-switch {
+        margin-top: 0.2rem;
+        margin-bottom: 0.1rem;
+    }
 
-  .auth-switch-btn {
-    min-height: 38px;
-    font-size: 0.86rem;
-  }
+    .auth-switch-btn {
+        min-height: 38px;
+        font-size: 0.86rem;
+    }
 
-  .login-form input {
-    min-height: 46px;
-    font-size: 0.98rem;
-  }
+    .login-form input {
+        min-height: 46px;
+        font-size: 0.98rem;
+    }
 
-  .submit-btn {
-    margin-top: 0.45rem;
-    font-size: 0.88rem;
-  }
+    .submit-btn {
+        margin-top: 0.45rem;
+        font-size: 0.88rem;
+    }
 
-  .visual-pane h1 {
-    font-size: clamp(1.45rem, 6vw, 1.95rem);
-  }
+    .visual-pane h1 {
+        font-size: clamp(1.45rem, 6vw, 1.95rem);
+    }
 
-  .visual-pane p {
-    font-size: 0.94rem;
-    max-width: 36ch;
-  }
+    .visual-pane p {
+        font-size: 0.94rem;
+        max-width: 36ch;
+    }
 
-  .motif-cloud {
-    margin-bottom: 0.75rem;
-    gap: 0.42rem;
-  }
+    .motif-cloud {
+        margin-bottom: 0.75rem;
+        gap: 0.42rem;
+    }
 
-  .motif-chip {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.55rem;
-  }
+    .motif-chip {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.55rem;
+    }
 
-  .shape-a {
-    width: 160px;
-    height: 160px;
-    right: -45px;
-    top: -45px;
-  }
+    .shape-a {
+        width: 160px;
+        height: 160px;
+        right: -45px;
+        top: -45px;
+    }
 
-  .shape-b {
-    width: 105px;
-    height: 105px;
-  }
+    .shape-b {
+        width: 105px;
+        height: 105px;
+    }
 
-  .shape-c {
-    width: 72px;
-    height: 72px;
-  }
+    .shape-c {
+        width: 72px;
+        height: 72px;
+    }
 
-  .theme-atmosphere::before,
-  .theme-atmosphere::after {
-    opacity: 0.66;
-  }
+    .theme-atmosphere::before,
+    .theme-atmosphere::after {
+        opacity: 0.66;
+    }
 }
 
 @media (max-width: 560px) {
-  .login-shell {
-    padding: 0.6rem;
-  }
+    .login-shell {
+        padding: 0.6rem;
+    }
 
-  .login-card {
-    border-radius: 14px;
-    width: 100%;
-  }
+    .login-card {
+        border-radius: 14px;
+        width: 100%;
+    }
 
-  .login-pane {
-    padding: 1.05rem 0.85rem;
-  }
+    .login-pane {
+        padding: 1.05rem 0.85rem;
+    }
 
-  .brand {
-    font-size: 0.82rem;
-  }
+    .brand {
+        font-size: 0.82rem;
+    }
 
-  .title {
-    font-size: 1.25rem;
-    margin-top: 0.45rem;
-  }
+    .title {
+        font-size: 1.25rem;
+        margin-top: 0.45rem;
+    }
 
-  .role-select-label {
-    font-size: 0.8rem;
-  }
+    .role-select-label {
+        font-size: 0.8rem;
+    }
 
-  .role-select {
-    min-height: 42px;
-    font-size: 0.9rem;
-    padding: 0.58rem 0.72rem;
-  }
+    .role-select {
+        min-height: 42px;
+        font-size: 0.9rem;
+        padding: 0.58rem 0.72rem;
+    }
 
-  .auth-switch {
-    padding: 0.26rem;
-    gap: 0.34rem;
-  }
+    .auth-switch {
+        padding: 0.26rem;
+        gap: 0.34rem;
+    }
 
-  .auth-switch-btn {
-    min-height: 36px;
-    font-size: 0.82rem;
-  }
+    .auth-switch-btn {
+        min-height: 36px;
+        font-size: 0.82rem;
+    }
 
-  .login-form {
-    margin-top: 0.5rem;
-  }
+    .login-form {
+        margin-top: 0.5rem;
+    }
 
-  .login-form input {
-    min-height: 44px;
-    font-size: 0.95rem;
-    padding: 0.7rem 0.9rem;
-  }
+    .login-form input {
+        min-height: 44px;
+        font-size: 0.95rem;
+        padding: 0.7rem 0.9rem;
+    }
 
-  .submit-btn {
-    min-height: 46px;
-    width: 100%;
-    font-size: 0.84rem;
-    letter-spacing: 0.09em;
-  }
+    .submit-btn {
+        min-height: 46px;
+        width: 100%;
+        font-size: 0.84rem;
+        letter-spacing: 0.09em;
+    }
 
-  .helper-text {
-    font-size: 0.83rem;
-  }
+    .helper-text {
+        font-size: 0.83rem;
+    }
 
-  .motif-chip {
-    font-size: 0.67rem;
-    letter-spacing: 0.02em;
-    padding: 0.22rem 0.48rem;
-  }
+    .motif-chip {
+        font-size: 0.67rem;
+        letter-spacing: 0.02em;
+        padding: 0.22rem 0.48rem;
+    }
 
-  .theme-atmosphere::before,
-  .theme-atmosphere::after {
-    opacity: 0.58;
-    transform: scale(0.72);
-    transform-origin: center;
-  }
+    .theme-atmosphere::before,
+    .theme-atmosphere::after {
+        opacity: 0.58;
+        transform: scale(0.72);
+        transform-origin: center;
+    }
 
-  .shape-a,
-  .shape-b,
-  .shape-c {
-    opacity: 0.46;
-  }
+    .shape-a,
+    .shape-b,
+    .shape-c {
+        opacity: 0.46;
+    }
 }
 
 @media (max-width: 390px) {
-  .login-shell {
-    padding: 0.45rem;
-  }
+    .login-shell {
+        padding: 0.45rem;
+    }
 
-  .login-pane {
-    padding: 0.9rem 0.72rem;
-  }
+    .login-pane {
+        padding: 0.9rem 0.72rem;
+    }
 
-  .title {
-    font-size: 1.14rem;
-  }
+    .title {
+        font-size: 1.14rem;
+    }
 
-  .role-tab {
-    font-size: 0.78rem;
-  }
+    .role-tab {
+        font-size: 0.78rem;
+    }
 
-  .visual-pane {
-    min-height: 210px;
-  }
+    .visual-pane {
+        min-height: 210px;
+    }
 
-  .visual-pane p {
-    font-size: 0.88rem;
-  }
+    .visual-pane p {
+        font-size: 0.88rem;
+    }
 
-  .motif-cloud {
-    gap: 0.3rem;
-  }
+    .motif-cloud {
+        gap: 0.3rem;
+    }
 
-  .motif-chip {
-    font-size: 0.62rem;
-  }
+    .motif-chip {
+        font-size: 0.62rem;
+    }
 
-  .theme-atmosphere,
-  .shape {
-    display: none;
-  }
+    .theme-atmosphere,
+    .shape {
+        display: none;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .visual-pane,
-  .shape,
-  .motif-chip,
-  .theme-atmosphere::before,
-  .theme-atmosphere::after {
-    animation: none !important;
-    transform: none !important;
-  }
 
-  .auth-form-shell {
-    animation: none !important;
-  }
+    .visual-pane,
+    .shape,
+    .motif-chip,
+    .theme-atmosphere::before,
+    .theme-atmosphere::after {
+        animation: none !important;
+        transform: none !important;
+    }
+
+    .auth-form-shell {
+        animation: none !important;
+    }
 }

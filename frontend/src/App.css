@@ -300,6 +300,7 @@
     transform: translateX(14px);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -310,9 +311,11 @@
   0% {
     transform: translateY(0) rotate(0deg);
   }
+
   50% {
     transform: translateY(-10px) rotate(4deg);
   }
+
   100% {
     transform: translateY(0) rotate(0deg);
   }
@@ -322,9 +325,11 @@
   0% {
     transform: rotate(22deg) translateY(0);
   }
+
   50% {
     transform: rotate(16deg) translateY(-9px);
   }
+
   100% {
     transform: rotate(22deg) translateY(0);
   }
