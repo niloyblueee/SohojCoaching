@@ -1,42 +1,367 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Nunito:wght@400;600;700&display=swap');
+
+:root {
+  --panel-bg: #f5f6fb;
+  --ink: #141838;
+  --muted: #5f6786;
+  --line: #d7deea;
+  --student-a: #04163b;
+  --student-b: #0d3992;
+  --teacher-a: #10322c;
+  --teacher-b: #0d826f;
+  --admin-a: #2f1b3f;
+  --admin-b: #b64b3e;
+}
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  min-height: 100vh;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: background 500ms ease;
 }
 
-@keyframes logo-spin {
+.ambient-layer {
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(circle at 18% 25%, rgba(255, 255, 255, 0.34), transparent 28%),
+    radial-gradient(circle at 75% 78%, rgba(255, 255, 255, 0.15), transparent 26%),
+    radial-gradient(circle at 86% 22%, rgba(255, 255, 255, 0.28), transparent 18%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.role-student {
+  background: linear-gradient(135deg, var(--student-a) 0%, #061b61 45%, var(--student-b) 100%);
+}
+
+.role-teacher {
+  background: linear-gradient(130deg, var(--teacher-a) 0%, #15584f 42%, var(--teacher-b) 100%);
+}
+
+.role-admin {
+  background: linear-gradient(125deg, var(--admin-a) 0%, #5d275f 42%, var(--admin-b) 100%);
+}
+
+.login-card {
+  width: min(980px, 96vw);
+  min-height: 560px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(5, 8, 28, 0.45);
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  position: relative;
+  z-index: 2;
+}
+
+.login-pane {
+  padding: 2.2rem 2.1rem;
+}
+
+.form-pane {
+  background: var(--panel-bg);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  margin: 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3f4f8c;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+}
+
+.title {
+  margin: 0.6rem 0 1rem;
+  font-size: 1.7rem;
+  font-family: 'Chakra Petch', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.role-switch {
+  margin-bottom: 1.2rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.4rem;
+  background: #e9eef8;
+  border-radius: 14px;
+}
+
+.role-tab {
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #40548a;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  padding: 0.6rem 0.4rem;
+  cursor: pointer;
+  transition: transform 220ms ease, background-color 220ms ease, color 220ms ease;
+}
+
+.role-tab:hover {
+  transform: translateY(-1px);
+}
+
+.role-tab.active {
+  background: linear-gradient(120deg, #1a2766, #2f73af);
+  color: #f8faff;
+  box-shadow: 0 8px 20px rgba(39, 85, 140, 0.35);
+}
+
+.login-form {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.6rem;
+}
+
+.login-form input {
+  border: 1px solid var(--line);
+  background: #ffffff;
+  color: #1a2142;
+  border-radius: 999px;
+  padding: 0.78rem 1rem;
+  font-size: 1rem;
+  font-family: 'Nunito', sans-serif;
+  transition: border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.login-form input:focus {
+  border-color: #3f67dc;
+  box-shadow: 0 0 0 3px rgba(88, 126, 241, 0.2);
+  outline: none;
+}
+
+.submit-btn {
+  margin-top: 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.96rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #ffffff;
+  background: linear-gradient(90deg, #131f60 0%, #235196 100%);
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(25, 57, 125, 0.32);
+}
+
+.helper-text {
+  margin-top: auto;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-family: 'Nunito', sans-serif;
+}
+
+.visual-pane {
+  position: relative;
+  isolation: isolate;
+  color: #f5f8ff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  animation: panelReveal 420ms ease;
+}
+
+.visual-pane::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 85% 24%, rgba(255, 255, 255, 0.2), transparent 35%),
+    radial-gradient(circle at 18% 78%, rgba(255, 255, 255, 0.16), transparent 30%);
+}
+
+.role-student .visual-pane {
+  background:
+    linear-gradient(145deg, rgba(2, 18, 59, 0.94), rgba(9, 46, 139, 0.88)),
+    linear-gradient(35deg, rgba(255, 255, 255, 0.06), transparent 50%);
+}
+
+.role-teacher .visual-pane {
+  background:
+    linear-gradient(145deg, rgba(11, 57, 48, 0.95), rgba(7, 121, 104, 0.88)),
+    linear-gradient(40deg, rgba(255, 255, 255, 0.08), transparent 50%);
+}
+
+.role-admin .visual-pane {
+  background:
+    linear-gradient(145deg, rgba(54, 24, 62, 0.95), rgba(145, 46, 71, 0.88)),
+    linear-gradient(40deg, rgba(255, 255, 255, 0.1), transparent 55%);
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  width: 52px;
+  border-radius: 50%;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(4px);
+  margin-bottom: 1rem;
+}
+
+.visual-pane h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  font-family: 'Chakra Petch', sans-serif;
+  line-height: 1.15;
+}
+
+.visual-pane p {
+  margin: 0.75rem 0 0;
+  max-width: 32ch;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.02rem;
+}
+
+.visual-pane .note {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.shape {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  pointer-events: none;
+}
+
+.shape-a {
+  width: 210px;
+  height: 210px;
+  right: -52px;
+  top: -52px;
+  border-radius: 38% 62% 46% 54%;
+  animation: drift 10s ease-in-out infinite;
+}
+
+.shape-b {
+  width: 140px;
+  height: 140px;
+  left: 10%;
+  top: 16%;
+  border-radius: 48% 52% 38% 62%;
+  animation: drift 8s ease-in-out infinite reverse;
+}
+
+.shape-c {
+  width: 96px;
+  height: 96px;
+  right: 18%;
+  bottom: 16%;
+  border-radius: 22px;
+  transform: rotate(22deg);
+  animation: floatUp 6s ease-in-out infinite;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+@keyframes panelReveal {
   from {
-    transform: rotate(0deg);
+    transform: translateX(14px);
+    opacity: 0;
   }
   to {
-    transform: rotate(360deg);
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@keyframes drift {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(4deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
   }
 }
 
-.card {
-  padding: 2em;
+@keyframes floatUp {
+  0% {
+    transform: rotate(22deg) translateY(0);
+  }
+  50% {
+    transform: rotate(16deg) translateY(-9px);
+  }
+  100% {
+    transform: rotate(22deg) translateY(0);
+  }
 }
 
-.read-the-docs {
-  color: #888;
+@media (max-width: 900px) {
+  .login-card {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .visual-pane {
+    min-height: 280px;
+    justify-content: center;
+  }
+
+  .helper-text {
+    margin-top: 1.1rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .login-shell {
+    padding: 0.85rem;
+  }
+
+  .login-pane {
+    padding: 1.3rem 1rem;
+  }
+
+  .role-switch {
+    gap: 0.35rem;
+    padding: 0.35rem;
+  }
+
+  .role-tab {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.2rem;
+  }
 }
