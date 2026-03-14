@@ -33,6 +33,10 @@ model Batch {
   subject             String?
   schedule            String?
   monthlyFee          Decimal?             @db.Decimal(10, 2) @map("monthly_fee")
+  discountedFee       Decimal?             @db.Decimal(10, 2) @map("discounted_fee")
+  batchDuration       String?              @map("batch_duration")
+  description         String?
+  weeklyRoutine       Json?                @map("weekly_routine")
   teacherId           String?              @db.Uuid @map("teacher_id")
   createdAt           DateTime             @default(now()) @map("created_at")
   teacher             User?                @relation("BatchTeacher", fields: [teacherId], references: [id])

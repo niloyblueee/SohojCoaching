@@ -71,7 +71,8 @@
 .batch-sidebar input,
 .batch-sidebar select,
 .batch-form input,
-.batch-form select {
+.batch-form select,
+.batch-form textarea {
     border: 1px solid #c7e4d4;
     border-radius: 10px;
     min-height: 42px;
@@ -84,10 +85,16 @@
 .batch-sidebar input:focus,
 .batch-sidebar select:focus,
 .batch-form input:focus,
-.batch-form select:focus {
+.batch-form select:focus,
+.batch-form textarea:focus {
     outline: none;
     border-color: #2f8f67;
     box-shadow: 0 0 0 3px rgba(67, 160, 117, 0.2);
+}
+
+.batch-form textarea {
+    resize: vertical;
+    min-height: 90px;
 }
 
 .batch-stat-card {
@@ -169,6 +176,34 @@
     font-size: 0.92rem;
 }
 
+.batch-discount {
+    color: #1f7a57;
+    font-weight: 700;
+}
+
+.batch-routine {
+    margin-top: 0.65rem;
+    border: 1px dashed #c5e4d3;
+    border-radius: 10px;
+    padding: 0.55rem 0.6rem;
+    background: #f7fdf9;
+}
+
+.batch-routine p {
+    margin: 0 0 0.3rem;
+    color: #2d5e48;
+}
+
+.batch-routine ul {
+    margin: 0;
+    padding-left: 1rem;
+    color: #2f5f4b;
+}
+
+.batch-routine li {
+    margin: 0.2rem 0;
+}
+
 .batch-actions {
     margin-top: 0.85rem;
     display: flex;
@@ -238,6 +273,35 @@
     gap: 0.55rem;
 }
 
+.routine-section {
+    border: 1px solid #d7ecdf;
+    border-radius: 12px;
+    padding: 0.6rem;
+    background: #f3fcf7;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.routine-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+}
+
+.routine-header p {
+    margin: 0;
+    color: #255640;
+    font-weight: 700;
+}
+
+.routine-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr 1fr auto;
+    gap: 0.45rem;
+    align-items: center;
+}
+
 .batch-form-error {
     margin: 0;
     color: #a03538;
@@ -259,5 +323,9 @@
 
     .batch-page-header {
         flex-direction: column;
+    }
+
+    .routine-row {
+        grid-template-columns: 1fr;
     }
 }

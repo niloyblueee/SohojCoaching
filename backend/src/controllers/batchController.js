@@ -13,6 +13,17 @@ const isPositiveOrZeroNumber = (value) => {
     return Number.isFinite(n) && n >= 0;
 };
 
+const isValidRoutine = (value) => {
+    if (!Array.isArray(value)) return false;
+
+    return value.every((entry) => {
+        const day = String(entry?.day || '').trim();
+        const subject = String(entry?.subject || '').trim();
+        const time = String(entry?.time || '').trim();
+        return Boolean(day && subject && time);
+    });
+};
+
 export const listBatchesController = (prisma) => async (req, res) => {
     try {
         const data = await getBatches(prisma, {
@@ -42,7 +53,17 @@ export const getBatchByIdController = (prisma) => async (req, res) => {
 };
 
 export const createBatchController = (prisma) => async (req, res) => {
-    const { batch_name, subject, schedule, monthly_fee, teacher_id } = req.body;
+    const {
+        batch_name,
+        subject,
+        schedule,
+        monthly_fee,
+        discounted_fee,
+        batch_duration,
+        description,
+        weekly_routine,
+        teacher_id
+    } = req.body;
 
     if (!String(batch_name || '').trim()) {
         return res.status(400).json({ error: 'batch_name is required.' });
@@ -52,12 +73,30 @@ export const createBatchController = (prisma) => async (req, res) => {
         return res.status(400).json({ error: 'subject is required.' });
     }
 
-    if (!String(schedule || '').trim()) {
-        return res.status(400).json({ error: 'schedule cannot be empty.' });
-    }
-
     if (!isPositiveOrZeroNumber(monthly_fee)) {
         return res.status(400).json({ error: 'monthly_fee must be greater than or equal to 0.' });
+    }
+
+    if (discounted_fee !== undefined && discounted_fee !== null && discounted_fee !== '' && !isPositiveOrZeroNumber(discounted_fee)) {
+        return res.status(400).json({ error: 'discounted_fee must be greater than or equal to 0.' });
+    }
+
+    if (discounted_fee !== undefined && discounted_fee !== null && discounted_fee !== '') {
+        if (Number(discounted_fee) > Number(monthly_fee)) {
+            return res.status(400).json({ error: 'discounted_fee cannot be greater than monthly_fee.' });
+        }
+    }
+
+    if (batch_duration !== undefined && !String(batch_duration || '').trim()) {
+        return res.status(400).json({ error: 'batch_duration cannot be empty when provided.' });
+    }
+
+    if (description !== undefined && String(description).length > 2000) {
+        return res.status(400).json({ error: 'description cannot exceed 2000 characters.' });
+    }
+
+    if (weekly_routine !== undefined && !isValidRoutine(weekly_routine)) {
+        return res.status(400).json({ error: 'weekly_routine must be an array of { day, subject, time } entries.' });
     }
 
     if (teacher_id && !isUuid(teacher_id)) {
@@ -70,6 +109,10 @@ export const createBatchController = (prisma) => async (req, res) => {
             subject,
             schedule,
             monthly_fee,
+            discounted_fee,
+            batch_duration,
+            description,
+            weekly_routine,
             teacher_id
         });
 
@@ -90,7 +133,17 @@ export const updateBatchController = (prisma) => async (req, res) => {
         return res.status(400).json({ error: 'Invalid batch id.' });
     }
 
-    const { batch_name, subject, schedule, monthly_fee, teacher_id } = req.body;
+    const {
+        batch_name,
+        subject,
+        schedule,
+        monthly_fee,
+        discounted_fee,
+        batch_duration,
+        description,
+        weekly_routine,
+        teacher_id
+    } = req.body;
 
     if (batch_name !== undefined && !String(batch_name || '').trim()) {
         return res.status(400).json({ error: 'batch_name cannot be empty.' });
@@ -100,12 +153,30 @@ export const updateBatchController = (prisma) => async (req, res) => {
         return res.status(400).json({ error: 'subject cannot be empty.' });
     }
 
-    if (schedule !== undefined && !String(schedule || '').trim()) {
-        return res.status(400).json({ error: 'schedule cannot be empty.' });
-    }
-
     if (monthly_fee !== undefined && !isPositiveOrZeroNumber(monthly_fee)) {
         return res.status(400).json({ error: 'monthly_fee must be greater than or equal to 0.' });
+    }
+
+    if (discounted_fee !== undefined && discounted_fee !== null && discounted_fee !== '' && !isPositiveOrZeroNumber(discounted_fee)) {
+        return res.status(400).json({ error: 'discounted_fee must be greater than or equal to 0.' });
+    }
+
+    if (monthly_fee !== undefined && discounted_fee !== undefined && discounted_fee !== null && discounted_fee !== '') {
+        if (Number(discounted_fee) > Number(monthly_fee)) {
+            return res.status(400).json({ error: 'discounted_fee cannot be greater than monthly_fee.' });
+        }
+    }
+
+    if (batch_duration !== undefined && !String(batch_duration || '').trim()) {
+        return res.status(400).json({ error: 'batch_duration cannot be empty.' });
+    }
+
+    if (description !== undefined && String(description).length > 2000) {
+        return res.status(400).json({ error: 'description cannot exceed 2000 characters.' });
+    }
+
+    if (weekly_routine !== undefined && !isValidRoutine(weekly_routine)) {
+        return res.status(400).json({ error: 'weekly_routine must be an array of { day, subject, time } entries.' });
     }
 
     if (teacher_id && !isUuid(teacher_id)) {
@@ -118,6 +189,10 @@ export const updateBatchController = (prisma) => async (req, res) => {
             subject,
             schedule,
             monthly_fee,
+            discounted_fee,
+            batch_duration,
+            description,
+            weekly_routine,
             teacher_id
         });
 

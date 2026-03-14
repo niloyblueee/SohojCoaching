@@ -1,11 +1,23 @@
 import { Prisma } from '@prisma/client';
 
 const normalizeText = (value) => String(value || '').trim();
+const normalizeRoutine = (value) => {
+    if (!Array.isArray(value)) return [];
+
+    return value
+        .map((entry) => ({
+            day: normalizeText(entry?.day),
+            subject: normalizeText(entry?.subject),
+            time: normalizeText(entry?.time)
+        }))
+        .filter((entry) => entry.day && entry.subject && entry.time);
+};
 
 const normalizeBatchRecord = (batch) => {
     const batchName = batch.batchName || batch.name;
     const subject = batch.subject || batch.course;
     const monthlyFee = batch.monthlyFee == null ? 0 : Number(batch.monthlyFee);
+    const discountedFee = batch.discountedFee == null ? null : Number(batch.discountedFee);
 
     return {
         id: batch.id,
@@ -13,6 +25,10 @@ const normalizeBatchRecord = (batch) => {
         subject,
         schedule: batch.schedule || '',
         monthly_fee: monthlyFee,
+        discounted_fee: discountedFee,
+        batch_duration: batch.batchDuration || '',
+        description: batch.description || '',
+        weekly_routine: normalizeRoutine(batch.weeklyRoutine),
         teacher_id: batch.teacherId || null,
         created_at: batch.createdAt,
         student_count: batch._count?.enrollments || 0,
@@ -108,6 +124,19 @@ export const createBatch = async (prisma, payload) => {
     const schedule = normalizeText(payload.schedule);
     const teacherId = payload.teacher_id || null;
     const monthlyFee = Number(payload.monthly_fee);
+    const discountedFee =
+        payload.discounted_fee === undefined || payload.discounted_fee === null || payload.discounted_fee === ''
+            ? null
+            : Number(payload.discounted_fee);
+    const batchDuration = normalizeText(payload.batch_duration);
+    const description = normalizeText(payload.description);
+    const weeklyRoutine = normalizeRoutine(payload.weekly_routine);
+
+    if (discountedFee != null && discountedFee > monthlyFee) {
+        const error = new Error('discounted_fee cannot be greater than monthly_fee.');
+        error.statusCode = 400;
+        throw error;
+    }
 
     await assertTeacher(prisma, teacherId);
 
@@ -118,6 +147,10 @@ export const createBatch = async (prisma, payload) => {
         subject,
         schedule,
         monthlyFee: new Prisma.Decimal(monthlyFee),
+        discountedFee: discountedFee == null ? null : new Prisma.Decimal(discountedFee),
+        batchDuration,
+        description,
+        weeklyRoutine,
         teacherId
     };
 
@@ -138,6 +171,16 @@ export const createBatch = async (prisma, payload) => {
 
 export const updateBatch = async (prisma, id, payload) => {
     const updates = {};
+    const existing = await prisma.batch.findUnique({
+        where: { id },
+        select: { monthlyFee: true, discountedFee: true }
+    });
+
+    if (!existing) {
+        const error = new Error('Batch not found.');
+        error.statusCode = 404;
+        throw error;
+    }
 
     if (payload.batch_name !== undefined) {
         const batchName = normalizeText(payload.batch_name);
@@ -157,6 +200,44 @@ export const updateBatch = async (prisma, id, payload) => {
 
     if (payload.monthly_fee !== undefined) {
         updates.monthlyFee = new Prisma.Decimal(Number(payload.monthly_fee));
+    }
+
+    if (payload.discounted_fee !== undefined) {
+        updates.discountedFee =
+            payload.discounted_fee === null || payload.discounted_fee === ''
+                ? null
+                : new Prisma.Decimal(Number(payload.discounted_fee));
+    }
+
+    const nextMonthlyFee =
+        updates.monthlyFee !== undefined
+            ? Number(updates.monthlyFee)
+            : existing.monthlyFee == null
+                ? 0
+                : Number(existing.monthlyFee);
+    const nextDiscountedFee =
+        updates.discountedFee !== undefined
+            ? (updates.discountedFee == null ? null : Number(updates.discountedFee))
+            : existing.discountedFee == null
+                ? null
+                : Number(existing.discountedFee);
+
+    if (nextDiscountedFee != null && nextDiscountedFee > nextMonthlyFee) {
+        const error = new Error('discounted_fee cannot be greater than monthly_fee.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (payload.batch_duration !== undefined) {
+        updates.batchDuration = normalizeText(payload.batch_duration);
+    }
+
+    if (payload.description !== undefined) {
+        updates.description = normalizeText(payload.description);
+    }
+
+    if (payload.weekly_routine !== undefined) {
+        updates.weeklyRoutine = normalizeRoutine(payload.weekly_routine);
     }
 
     if (payload.teacher_id !== undefined) {
@@ -182,14 +263,7 @@ export const updateBatch = async (prisma, id, payload) => {
 };
 
 export const deleteBatch = async (prisma, id) => {
-    const batch = await prisma.batch.findUnique({
-        where: { id },
-        include: {
-            _count: {
-                select: { enrollments: true }
-            }
-        }
-    });
+    const batch = await prisma.batch.findUnique({ where: { id } });
 
     if (!batch) {
         const error = new Error('Batch not found.');
@@ -197,11 +271,11 @@ export const deleteBatch = async (prisma, id) => {
         throw error;
     }
 
-    if ((batch._count?.enrollments || 0) > 0) {
-        const error = new Error('Cannot delete a batch that already has enrolled students.');
-        error.statusCode = 409;
-        throw error;
-    }
-
-    await prisma.batch.delete({ where: { id } });
+    await prisma.$transaction([
+        prisma.teacherAssignment.deleteMany({ where: { batchId: id } }),
+        prisma.enrollment.deleteMany({ where: { batchId: id } }),
+        prisma.studyMaterial.deleteMany({ where: { batchId: id } }),
+        prisma.studentScript.deleteMany({ where: { batchId: id } }),
+        prisma.batch.delete({ where: { id } })
+    ]);
 };

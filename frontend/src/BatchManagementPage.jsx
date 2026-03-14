@@ -62,7 +62,7 @@ function BatchManagementPage() {
     };
 
     const handleDeleteBatch = async (batch) => {
-        const confirmed = window.confirm(`Delete batch "${batch.batch_name}"? This action is blocked if students are enrolled.`);
+        const confirmed = window.confirm(`Delete batch "${batch.batch_name}"? This will also remove related enrollments, assignments, and scripts.`);
         if (!confirmed) return;
 
         try {
