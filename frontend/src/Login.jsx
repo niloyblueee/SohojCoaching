@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import './Login.css';
-import { login } from './services/authApi';
+import { login, signup } from './services/authApi';
 
 function Login({ onAuthSuccess }) {
     const loginTypes = useMemo(
@@ -94,19 +94,22 @@ function Login({ onAuthSuccess }) {
                 setStatus('Password and Confirm Password do not match.');
                 return;
             }
-
-            setStatusType('info');
-            setStatus('Signup UI is ready. Backend signup endpoint is not connected yet.');
-            return;
         }
 
         setIsSubmitting(true);
         try {
-            const payload = await login({
-                role: selectedType,
-                email: formValues.email.trim(),
-                password: formValues.password
-            });
+            const payload = isSignup
+                ? await signup({
+                    role: selectedType,
+                    name: formValues.fullName.trim(),
+                    email: formValues.email.trim(),
+                    password: formValues.password
+                })
+                : await login({
+                    role: selectedType,
+                    email: formValues.email.trim(),
+                    password: formValues.password
+                });
 
             if (typeof onAuthSuccess === 'function') {
                 onAuthSuccess(payload);

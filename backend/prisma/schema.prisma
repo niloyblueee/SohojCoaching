@@ -14,6 +14,7 @@ model User {
   name                String
   email               String               @unique
   role                String               // e.g., 'student' or 'teacher'
+  passwordHash        String?              @map("password_hash")
   enrollments         Enrollment[]
   teacherAssignments  TeacherAssignment[]
   uploadedMaterials   StudyMaterial[]

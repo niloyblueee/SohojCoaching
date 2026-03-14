@@ -96,6 +96,102 @@
   padding: 0.5rem 1rem 1rem;
 }
 
+.role-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.role-shell-teacher {
+  background:
+    radial-gradient(circle at 8% 10%, rgba(127, 203, 171, 0.3), transparent 30%),
+    radial-gradient(circle at 92% 88%, rgba(196, 236, 212, 0.28), transparent 32%),
+    linear-gradient(180deg, #e9f8f2 0%, #d4efe3 100%);
+}
+
+.role-shell-student {
+  background:
+    radial-gradient(circle at 8% 10%, rgba(122, 175, 255, 0.32), transparent 30%),
+    radial-gradient(circle at 92% 88%, rgba(172, 212, 255, 0.3), transparent 32%),
+    linear-gradient(180deg, #eaf2ff 0%, #d6e7ff 100%);
+}
+
+.role-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid rgba(109, 149, 204, 0.25);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.role-topbar h1 {
+  margin: 0.2rem 0 0;
+  font-size: 1.4rem;
+  font-family: 'Chakra Petch', sans-serif;
+  color: #1a2f69;
+}
+
+.role-brand {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #445d9b;
+}
+
+.role-session {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: #314980;
+}
+
+.role-session button {
+  border: 0;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0.45rem 0.85rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: #f7f9ff;
+  background: linear-gradient(120deg, #2d3b7f, #365ea4);
+  cursor: pointer;
+}
+
+.role-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 0.7rem 1.2rem 0.8rem;
+}
+
+.role-nav a {
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 0.5rem 0.85rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: #34508f;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid #c1d0ef;
+}
+
+.role-nav a.active {
+  color: #f8fbff;
+  border-color: transparent;
+  background: linear-gradient(120deg, #2d3b7f, #3a79c1);
+}
+
+.role-content {
+  padding: 0.5rem 1rem 1rem;
+}
+
 @media (max-width: 720px) {
   .admin-topbar {
     align-items: flex-start;
@@ -111,6 +207,20 @@
     padding: 0.3rem 0.6rem 0.8rem;
     opacity: 0;
     opacity: 1;
+  }
+
+  .role-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .role-session {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .role-content {
+    padding: 0.3rem 0.6rem 0.8rem;
   }
 }
 

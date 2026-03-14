@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import { randomUUID } from 'crypto';
-import { requireAdmin, requireAuth } from '../middleware/auth.js';
+import { requireAdmin, requireAnyRole, requireAuth } from '../middleware/auth.js';
 import { isUuid } from '../utils/validators.js';
 
 export const createAdminRoutes = (prisma) => {
     const adminRoutes = Router();
-    adminRoutes.use(requireAuth, requireAdmin);
+    adminRoutes.use(requireAuth);
 
     // POST /api/study-materials
-    adminRoutes.post('/study-materials', async (req, res) => {
+    adminRoutes.post('/study-materials', requireAnyRole(['admin', 'teacher']), async (req, res) => {
         const { batch_id, file_name, file_type, uploaded_by } = req.body;
 
         if (!isUuid(batch_id) || !isUuid(uploaded_by)) {
@@ -74,7 +74,7 @@ export const createAdminRoutes = (prisma) => {
     });
 
     // DELETE /api/study-materials/:id
-    adminRoutes.delete('/study-materials/:id', async (req, res) => {
+    adminRoutes.delete('/study-materials/:id', requireAnyRole(['admin', 'teacher']), async (req, res) => {
         const { id } = req.params;
 
         if (!isUuid(id)) {
@@ -93,7 +93,7 @@ export const createAdminRoutes = (prisma) => {
     });
 
     // POST /api/enrollments
-    adminRoutes.post('/enrollments', async (req, res) => {
+    adminRoutes.post('/enrollments', requireAdmin, async (req, res) => {
         const { student_id, batch_id } = req.body;
         try {
             const batchExists = await prisma.batch.findUnique({ where: { id: batch_id } });
@@ -115,7 +115,7 @@ export const createAdminRoutes = (prisma) => {
     });
 
     // DELETE /api/enrollments/:id
-    adminRoutes.delete('/enrollments/:id', async (req, res) => {
+    adminRoutes.delete('/enrollments/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
         try {
             const enrollment = await prisma.enrollment.update({
@@ -130,7 +130,7 @@ export const createAdminRoutes = (prisma) => {
     });
 
     // POST /api/assignments
-    adminRoutes.post('/assignments', async (req, res) => {
+    adminRoutes.post('/assignments', requireAdmin, async (req, res) => {
         const { teacher_id, batch_id, role } = req.body;
         try {
             const assignment = await prisma.teacherAssignment.create({
@@ -148,7 +148,7 @@ export const createAdminRoutes = (prisma) => {
     });
 
     // DELETE /api/assignments/:id
-    adminRoutes.delete('/assignments/:id', async (req, res) => {
+    adminRoutes.delete('/assignments/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
         try {
             const deletedAssignment = await prisma.teacherAssignment.delete({ where: { id } });
@@ -159,7 +159,7 @@ export const createAdminRoutes = (prisma) => {
     });
 
     // GET /api/batches/:batchId/members
-    adminRoutes.get('/batches/:batchId/members', async (req, res) => {
+    adminRoutes.get('/batches/:batchId/members', requireAnyRole(['admin', 'teacher']), async (req, res) => {
         const { batchId } = req.params;
         try {
             const enrollments = await prisma.enrollment.findMany({
@@ -192,7 +192,7 @@ export const createAdminRoutes = (prisma) => {
     });
 
     // POST /api/student-scripts
-    adminRoutes.post('/student-scripts', async (req, res) => {
+    adminRoutes.post('/student-scripts', requireAnyRole(['admin', 'teacher']), async (req, res) => {
         const { student_id, batch_id, exam_name, uploaded_by } = req.body;
 
         if (!isUuid(student_id) || !isUuid(batch_id) || !isUuid(uploaded_by)) {
@@ -272,7 +272,7 @@ export const createAdminRoutes = (prisma) => {
     });
 
     // DELETE /api/student-scripts/:id
-    adminRoutes.delete('/student-scripts/:id', async (req, res) => {
+    adminRoutes.delete('/student-scripts/:id', requireAnyRole(['admin', 'teacher']), async (req, res) => {
         const { id } = req.params;
 
         if (!isUuid(id)) {

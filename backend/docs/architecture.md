@@ -9,6 +9,7 @@ This backend now follows a modular structure so auth and feature routes can scal
 - `src/app.js`: express app composition and route mounting.
 - `src/config/authConfig.js`: JWT config + demo admin account catalog.
 - `src/middleware/auth.js`: token issue/verify and role guards.
+- `src/services/authService.js`: login/signup business logic per role.
 - `src/utils/validators.js`: reusable input validators.
 - `src/routes/authRoutes.js`: authentication endpoints.
 - `src/routes/publicRoutes.js`: read-only/shared API endpoints.
@@ -16,9 +17,10 @@ This backend now follows a modular structure so auth and feature routes can scal
 
 ## Auth Design
 
-1. `POST /api/auth/login` returns JWT for admin credentials.
-2. `GET /api/auth/me` validates and returns active user profile.
-3. Admin-only routes are protected by:
+1. `POST /api/auth/signup` creates student/teacher users with hashed passwords.
+2. `POST /api/auth/login` returns JWT for admin, teacher, and student roles.
+3. `GET /api/auth/me` validates and returns active user profile.
+4. Admin-only routes are protected by:
    - `requireAuth`
    - `requireAdmin`
 
@@ -27,4 +29,4 @@ This backend now follows a modular structure so auth and feature routes can scal
 - Keeps startup concerns separate from business logic.
 - Makes each domain route file smaller and easier to test.
 - Reduces merge conflicts by isolating feature changes.
-- Prepares clean extension point for Student/Teacher auth in next phase.
+- Keeps role-specific auth logic isolated for easier future upgrades.

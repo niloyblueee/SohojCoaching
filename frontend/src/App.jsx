@@ -1,5 +1,7 @@
 import Login from './Login';
 import AdminLayout from './layouts/AdminLayout';
+import TeacherLayout from './layouts/TeacherLayout';
+import StudentLayout from './layouts/StudentLayout';
 import { useAuthSession } from './hooks/useAuthSession';
 import './App.css';
 
@@ -18,7 +20,19 @@ function App() {
     return <Login onAuthSuccess={completeLogin} />;
   }
 
-  return <AdminLayout user={authState.user} onLogout={logout} />;
+  if (authState.user.role === 'admin') {
+    return <AdminLayout user={authState.user} onLogout={logout} />;
+  }
+
+  if (authState.user.role === 'teacher') {
+    return <TeacherLayout user={authState.user} onLogout={logout} />;
+  }
+
+  if (authState.user.role === 'student') {
+    return <StudentLayout user={authState.user} onLogout={logout} />;
+  }
+
+  return <Login onAuthSuccess={completeLogin} />;
 }
 
 export default App;

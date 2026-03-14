@@ -6,6 +6,8 @@ The frontend auth and API access flow is split into reusable layers for maintain
 
 - `src/App.jsx`: top-level app shell and auth gate.
 - `src/layouts/AdminLayout.jsx`: authenticated admin navigation + routes.
+- `src/layouts/TeacherLayout.jsx`: authenticated teacher navigation + routes.
+- `src/layouts/StudentLayout.jsx`: authenticated student navigation + routes.
 - `src/Login.jsx`: role-based login/signup UI + submit handling.
 - `src/hooks/useAuthSession.js`: restore session, login complete, logout.
 - `src/config/appConfig.js`: base URLs + storage keys.
@@ -24,3 +26,4 @@ The frontend auth and API access flow is split into reusable layers for maintain
 - New feature pages do not re-implement token logic.
 - Auth/session logic can evolve without touching every page.
 - Route-level organization remains clean as modules grow.
+- Each role now has its own post-login shell for scalable feature expansion.

@@ -39,3 +39,15 @@ export const requireAdmin = (req, res, next) => {
     }
     next();
 };
+
+export const requireAnyRole = (allowedRoles = []) => {
+    const normalized = allowedRoles.map((role) => String(role).toLowerCase());
+
+    return (req, res, next) => {
+        const currentRole = String(req.auth?.role || '').toLowerCase();
+        if (!normalized.includes(currentRole)) {
+            return res.status(403).json({ error: 'Insufficient role permissions.' });
+        }
+        next();
+    };
+};

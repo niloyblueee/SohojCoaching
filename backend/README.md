@@ -56,6 +56,34 @@ The API returns a JWT token. Send it as a bearer token:
 
 `Authorization: Bearer <token>`
 
+## Student and Teacher JWT Auth
+
+JWT auth now supports these routes:
+
+1. `POST /api/auth/signup`
+2. `POST /api/auth/login`
+3. `GET /api/auth/me`
+
+`signup` is enabled for `student` and `teacher` roles.
+
+Example signup payload:
+
+```json
+{
+	"role": "student",
+	"name": "John Doe",
+	"email": "john@example.com",
+	"password": "secret123"
+}
+```
+
+Note: a new `users.password_hash` column is required for role-based credentials.
+Run:
+
+```bash
+npm run db:push
+```
+
 ## Seed Management Test Data
 
 Create 2 students, 2 teachers, and 2 batches for `/management` testing:
