@@ -248,18 +248,22 @@
     inset: 0;
     background: rgba(6, 30, 18, 0.42);
     display: grid;
-    place-items: center;
+    place-items: start center;
     padding: 1rem;
+    overflow-y: auto;
     z-index: 1000;
 }
 
 .batch-modal {
-    width: min(480px, 96vw);
+    width: min(680px, 96vw);
+    box-sizing: border-box;
+    max-height: calc(100vh - 2rem);
     border-radius: 16px;
     background: #f9fffb;
     border: 1px solid #d8efe3;
     box-shadow: 0 16px 28px rgba(20, 68, 47, 0.22);
     padding: 1rem;
+    overflow-y: auto;
 }
 
 .batch-modal h3 {
@@ -270,7 +274,16 @@
 
 .batch-form {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.55rem;
+}
+
+.batch-form input,
+.batch-form select,
+.batch-form textarea {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .routine-section {
@@ -300,6 +313,14 @@
     grid-template-columns: 1.2fr 1.2fr 1fr auto;
     gap: 0.45rem;
     align-items: center;
+}
+
+.routine-row>* {
+    min-width: 0;
+}
+
+.routine-row .batch-btn {
+    white-space: nowrap;
 }
 
 .batch-form-error {
