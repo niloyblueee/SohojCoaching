@@ -10,8 +10,11 @@ This backend now follows a modular structure so auth and feature routes can scal
 - `src/config/authConfig.js`: JWT config + demo admin account catalog.
 - `src/middleware/auth.js`: token issue/verify and role guards.
 - `src/services/authService.js`: login/signup business logic per role.
+- `src/controllers/batchController.js`: FR-3 request validation + HTTP responses.
+- `src/services/batchService.js`: FR-3 batch business/query logic.
 - `src/utils/validators.js`: reusable input validators.
 - `src/routes/authRoutes.js`: authentication endpoints.
+- `src/routes/batchRoutes.js`: FR-3 batch CRUD endpoints.
 - `src/routes/publicRoutes.js`: read-only/shared API endpoints.
 - `src/routes/adminRoutes.js`: admin-protected mutations and management endpoints.
 
@@ -23,6 +26,16 @@ This backend now follows a modular structure so auth and feature routes can scal
 4. Admin-only routes are protected by:
    - `requireAuth`
    - `requireAdmin`
+
+## FR-3 Batch API
+
+1. `POST /api/batches` (admin)
+2. `GET /api/batches` (all authenticated roles)
+3. `GET /api/batches/:id` (all authenticated roles)
+4. `PUT /api/batches/:id` (admin)
+5. `DELETE /api/batches/:id` (admin, blocked if enrollments exist)
+
+`GET /api/batches` includes derived `student_count` from enrollments.
 
 ## Why This Structure
 

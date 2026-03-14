@@ -17,6 +17,7 @@ model User {
   passwordHash        String?              @map("password_hash")
   enrollments         Enrollment[]
   teacherAssignments  TeacherAssignment[]
+  configuredBatches   Batch[]              @relation("BatchTeacher")
   uploadedMaterials   StudyMaterial[]
   studentScripts      StudentScript[]      @relation("StudentScripts")
   uploadedScripts     StudentScript[]      @relation("ScriptUploader")
@@ -28,6 +29,13 @@ model Batch {
   id                  String               @id @default(uuid()) @db.Uuid
   name                String
   course              String
+  batchName           String?              @unique @map("batch_name")
+  subject             String?
+  schedule            String?
+  monthlyFee          Decimal?             @db.Decimal(10, 2) @map("monthly_fee")
+  teacherId           String?              @db.Uuid @map("teacher_id")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  teacher             User?                @relation("BatchTeacher", fields: [teacherId], references: [id])
   enrollments         Enrollment[]
   teacherAssignments  TeacherAssignment[]
   studyMaterials      StudyMaterial[]

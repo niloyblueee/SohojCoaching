@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { createAuthRoutes } from './routes/authRoutes.js';
+import { createBatchRoutes } from './routes/batchRoutes.js';
 import { createPublicRoutes } from './routes/publicRoutes.js';
 import { createAdminRoutes } from './routes/adminRoutes.js';
 
@@ -14,6 +15,7 @@ export const createApp = () => {
     app.use(express.json());
 
     app.use('/api/auth', createAuthRoutes(prisma));
+    app.use('/api', createBatchRoutes(prisma));
     app.use('/api', createPublicRoutes(prisma));
     app.use('/api', createAdminRoutes(prisma));
 

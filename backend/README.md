@@ -31,11 +31,18 @@ This command will:
 If you want a direct SQL setup script, use:
 
 - [sql/setup_tables.sql](sql/setup_tables.sql)
+- [sql/20260314_fr3_batch_creation_configuration.sql](sql/20260314_fr3_batch_creation_configuration.sql)
 
 Run it from Railway SQL console, or with `psql`:
 
 ```bash
 psql "$DATABASE_URL" -f sql/setup_tables.sql
+```
+
+For FR-3 batch migration script:
+
+```bash
+psql "$DATABASE_URL" -f sql/20260314_fr3_batch_creation_configuration.sql
 ```
 
 ## Start Backend

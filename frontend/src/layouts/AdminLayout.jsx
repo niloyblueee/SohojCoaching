@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
+import BatchManagementPage from '../BatchManagementPage';
 import ManagementDashboard from '../ManagementDashboard';
 import MaterialTeacherView from '../MaterialTeacherView';
 import ScriptUploadView from '../ScriptUploadView';
@@ -20,6 +21,7 @@ function AdminLayout({ user, onLogout }) {
                 </header>
 
                 <nav className="admin-nav">
+                    <NavLink to="/admin/batches">Batches</NavLink>
                     <NavLink to="/admin/management">Dashboard</NavLink>
                     <NavLink to="/admin/materials">Materials</NavLink>
                     <NavLink to="/admin/scripts">Exam Scripts</NavLink>
@@ -27,11 +29,12 @@ function AdminLayout({ user, onLogout }) {
 
                 <main className="admin-content">
                     <Routes>
-                        <Route path="/" element={<Navigate to="/admin/management" replace />} />
+                        <Route path="/" element={<Navigate to="/admin/batches" replace />} />
+                        <Route path="/admin/batches" element={<BatchManagementPage />} />
                         <Route path="/admin/management" element={<ManagementDashboard />} />
                         <Route path="/admin/materials" element={<MaterialTeacherView />} />
                         <Route path="/admin/scripts" element={<ScriptUploadView />} />
-                        <Route path="*" element={<Navigate to="/admin/management" replace />} />
+                        <Route path="*" element={<Navigate to="/admin/batches" replace />} />
                     </Routes>
                 </main>
             </div>

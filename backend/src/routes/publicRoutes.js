@@ -3,23 +3,6 @@ import { isUuid } from '../utils/validators.js';
 
 export const createPublicRoutes = (prisma) => {
     const publicRoutes = Router();
-    // GET /api/batches
-    publicRoutes.get('/batches', async (_req, res) => {
-        try {
-            const batches = await prisma.batch.findMany({
-                orderBy: { name: 'asc' },
-                select: {
-                    id: true,
-                    name: true,
-                    course: true
-                }
-            });
-            res.json(batches);
-        } catch (error) {
-            res.status(500).json({ error: 'Internal server error', details: error.message });
-        }
-    });
-
     // GET /api/students
     publicRoutes.get('/students', async (_req, res) => {
         try {
