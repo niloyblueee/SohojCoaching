@@ -38,6 +38,21 @@
         radial-gradient(circle at 86% 22%, rgba(255, 255, 255, 0.28), transparent 18%);
     filter: blur(10px);
     pointer-events: none;
+    animation: slowAmbientShift 20s ease-in-out infinite alternate;
+}
+
+@keyframes slowAmbientShift {
+    0% {
+        transform: scale(1) translate(0, 0);
+    }
+
+    50% {
+        transform: scale(1.05) translate(3%, 2%);
+    }
+
+    100% {
+        transform: scale(0.95) translate(-2%, 4%);
+    }
 }
 
 .role-student {
@@ -65,6 +80,19 @@
     grid-template-columns: 1fr 1.1fr;
     position: relative;
     z-index: 2;
+    animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .login-pane {
@@ -102,6 +130,7 @@
     padding: 0.4rem;
     background: #e9eef8;
     border-radius: 14px;
+    align-items: center;
 }
 
 .role-select-wrap {
@@ -139,19 +168,30 @@
 
 .role-tab {
     border: 0;
+    width: 100%;
     border-radius: 10px;
     background: transparent;
     color: #40548a;
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
     min-height: 44px;
-    padding: 0.6rem 0.4rem;
+    padding: 0;
     cursor: pointer;
     transition: transform 220ms ease, background-color 220ms ease, color 220ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
 }
 
-.role-tab:hover {
-    transform: translateY(-1px);
+.tab-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+}
+
+.role-tab:hover:not(.active) {
+    background-color: rgba(39, 85, 140, 0.08);
 }
 
 .role-tab.active {
@@ -170,23 +210,33 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.45rem;
-    padding: 0.3rem;
+    padding: 0.4rem;
     margin-bottom: 0.2rem;
     border-radius: 12px;
     background: #edf2fb;
+    align-items: center;
 }
 
 .auth-switch-btn {
     border: 0;
-    min-height: 40px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0;
     border-radius: 10px;
     background: transparent;
     color: #4560a3;
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 220ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-switch-btn:hover:not(.active) {
+    background-color: rgba(39, 85, 140, 0.08);
 }
 
 .auth-switch-btn.active {
@@ -207,13 +257,19 @@
     padding: 0.78rem 1rem;
     font-size: 1rem;
     font-family: 'Nunito', sans-serif;
-    transition: border-color 220ms ease, box-shadow 220ms ease;
+    transition: all 220ms ease;
+}
+
+.login-form input:hover {
+    border-color: #a4b5e6;
+    background: #fdfdff;
 }
 
 .login-form input:focus {
     border-color: #3f67dc;
     box-shadow: 0 0 0 3px rgba(88, 126, 241, 0.2);
     outline: none;
+    transform: translateY(-1px);
 }
 
 .submit-btn {
@@ -227,14 +283,30 @@
     letter-spacing: 0.12em;
     color: #ffffff;
     background: linear-gradient(90deg, #131f60 0%, #235196 100%);
+    background-size: 200% auto;
     font-family: 'Chakra Petch', sans-serif;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 220ms ease, box-shadow 220ms ease;
+    transition: transform 220ms ease, box-shadow 220ms ease, background-position 400ms ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+.btn-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 250ms ease;
+}
+
+.submit-btn:hover .btn-icon {
+    transform: translateX(4px);
 }
 
 .submit-btn:hover {
     transform: translateY(-2px);
+    background-position: right center;
     box-shadow: 0 10px 20px rgba(25, 57, 125, 0.32);
 }
 
@@ -418,6 +490,7 @@
     gap: 0.55rem;
     flex-wrap: wrap;
     margin-bottom: 1rem;
+    z-index: 10;
 }
 
 .motif-chip {
@@ -429,15 +502,20 @@
     text-transform: uppercase;
     border: 1px solid rgba(255, 255, 255, 0.34);
     backdrop-filter: blur(2px);
-    animation: chipFloat 4s ease-in-out infinite;
+    animation: chipFloat 4s ease-in-out infinite, fadeSlideUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.motif-chip:nth-child(1) {
+    animation-delay: 0s, 0.1s;
 }
 
 .motif-chip:nth-child(2) {
-    animation-delay: 300ms;
+    animation-delay: 300ms, 0.2s;
 }
 
 .motif-chip:nth-child(3) {
-    animation-delay: 600ms;
+    animation-delay: 600ms, 0.3s;
 }
 
 .role-student .motif-chip {
@@ -476,6 +554,9 @@
     font-size: clamp(1.7rem, 3vw, 2.35rem);
     font-family: 'Chakra Petch', sans-serif;
     line-height: 1.15;
+    animation: fadeSlideUp 0.6s ease-out forwards;
+    animation-delay: 0.1s;
+    opacity: 0;
 }
 
 .visual-pane p {
@@ -483,46 +564,131 @@
     max-width: 32ch;
     font-family: 'Nunito', sans-serif;
     font-size: 1.02rem;
+    animation: fadeSlideUp 0.6s ease-out forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
 }
 
 .visual-pane .note {
     margin-top: 1rem;
     font-size: 0.95rem;
-    opacity: 0.9;
+    opacity: 0;
+    animation: fadeSlideUp 0.6s ease-out forwards;
+    animation-delay: 0.3s;
 }
 
-.shape {
+.visual-content {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.role-illustration {
     position: absolute;
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    inset: 0;
     pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
-.shape-a {
-    width: 210px;
-    height: 210px;
-    right: -52px;
-    top: -52px;
-    border-radius: 38% 62% 46% 54%;
-    animation: drift 10s ease-in-out infinite;
+.icon-main {
+    width: 220px;
+    height: 220px;
+    opacity: 0.15;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-.shape-b {
-    width: 140px;
-    height: 140px;
-    left: 10%;
-    top: 16%;
-    border-radius: 48% 52% 38% 62%;
-    animation: drift 8s ease-in-out infinite reverse;
+.shadow-icon {
+    filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.3));
 }
 
-.shape-c {
-    width: 96px;
-    height: 96px;
-    right: 18%;
-    bottom: 16%;
-    border-radius: 22px;
-    transform: rotate(22deg);
-    animation: floatUp 6s ease-in-out infinite;
+.icon-float {
+    width: 64px;
+    height: 64px;
+    opacity: 0.25;
+    position: absolute;
+    animation: drift 6s ease-in-out infinite alternate;
+}
+
+.float-left {
+    left: 15%;
+    top: 25%;
+    animation-delay: -2s;
+}
+
+.float-right {
+    right: 15%;
+    bottom: 35%;
+    animation-duration: 8s;
+}
+
+/* Specific Role Animations */
+.book-anim {
+    animation: pulseOrbitMain 8s ease-in-out infinite;
+}
+
+.cap-anim {
+    animation: floatUp 7s ease-in-out infinite;
+    transform-origin: center;
+}
+
+.trophy-anim {
+    animation: drift 5s ease-in-out infinite reverse;
+}
+
+.presentation-anim {
+    animation: pulseOrbitMain 7s ease-in-out infinite reverse;
+}
+
+.star-anim {
+    animation: spinSlow 12s linear infinite;
+}
+
+.msg-anim {
+    animation: floatUp 6s ease-in-out infinite alternate;
+}
+
+.shield-anim {
+    animation: pulseOrbitMain 9s ease-in-out infinite;
+}
+
+.gear-anim {
+    animation: spinSlow 10s linear infinite;
+}
+
+.activity-anim {
+    animation: pulseOrbit 5s ease-in-out infinite alternate;
+}
+
+@keyframes pulseOrbitMain {
+    0% {
+        transform: translate(-50%, -50%) scale(1) translateY(0);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.05) translateY(-8px);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1) translateY(0);
+    }
 }
 
 .sr-only {
