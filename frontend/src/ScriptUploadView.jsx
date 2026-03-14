@@ -1,33 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { saveScriptBlob, deleteScriptBlob } from './services/indexedDbScriptProxy';
 import './ExamScripts.css';
+import { apiFetch } from './services/httpClient';
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
-const API_URL = `${BASE_URL}/api`;
-const AUTH_STORAGE_KEY = 'sohojcoaching_auth';
-
-const getAuthHeaders = () => {
-  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw);
-    if (!parsed?.token) return {};
-    return { Authorization: `Bearer ${parsed.token}` };
-  } catch {
-    return {};
-  }
-};
-
-async function apiFetch(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...getAuthHeaders(), ...(options.headers || {}) },
-    ...options
-  });
-  const contentType = response.headers.get('content-type') || '';
-  const payload = contentType.includes('application/json') ? await response.json() : null;
-  if (!response.ok) throw new Error(payload?.error || `Request failed (${response.status})`);
-  return payload;
-}
 
 function ScriptUploadView() {
   const [batches, setBatches] = useState([]);
@@ -52,8 +27,8 @@ function ScriptUploadView() {
     const load = async () => {
       try {
         const [batchData, teacherData] = await Promise.all([
-          apiFetch('/batches'),
-          apiFetch('/teachers')
+          apiFetch('/batches', { withAuth: true }),
+          apiFetch('/teachers', { withAuth: true })
         ]);
         setBatches(batchData);
         setTeachers(teacherData);
@@ -75,7 +50,7 @@ function ScriptUploadView() {
     }
     const load = async () => {
       try {
-        const members = await apiFetch(`/batches/${selectedBatch}/members`);
+        const members = await apiFetch(`/batches/${selectedBatch}/members`, { withAuth: true });
         setBatchStudents(members.students || []);
         setSelectedStudent('');
         setStudentSearch('');
@@ -91,7 +66,7 @@ function ScriptUploadView() {
     const load = async () => {
       if (!selectedBatch) { setScripts([]); return; }
       try {
-        const data = await apiFetch(`/student-scripts?batch_id=${encodeURIComponent(selectedBatch)}`);
+        const data = await apiFetch(`/student-scripts?batch_id=${encodeURIComponent(selectedBatch)}`, { withAuth: true });
         setScripts(data);
       } catch (err) {
         setStatus(err.message);
@@ -143,12 +118,13 @@ function ScriptUploadView() {
     try {
       const metadata = await apiFetch('/student-scripts', {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           student_id: selectedStudent,
           batch_id: selectedBatch,
           exam_name: examName.trim(),
           uploaded_by: selectedTeacher
-        })
+        },
+        withAuth: true
       });
 
       setProgress(55);
@@ -165,7 +141,7 @@ function ScriptUploadView() {
       if (fileInputRef.current) fileInputRef.current.value = '';
 
       // Refresh the scripts list
-      const data = await apiFetch(`/student-scripts?batch_id=${encodeURIComponent(selectedBatch)}`);
+      const data = await apiFetch(`/student-scripts?batch_id=${encodeURIComponent(selectedBatch)}`, { withAuth: true });
       setScripts(data);
     } catch (err) {
       setStatus(err.message);
@@ -179,9 +155,9 @@ function ScriptUploadView() {
   const onDelete = async (scriptId) => {
     setStatus('');
     try {
-      await apiFetch(`/student-scripts/${scriptId}`, { method: 'DELETE' });
+      await apiFetch(`/student-scripts/${scriptId}`, { method: 'DELETE', withAuth: true });
       await deleteScriptBlob(scriptId);
-      const data = await apiFetch(`/student-scripts?batch_id=${encodeURIComponent(selectedBatch)}`);
+      const data = await apiFetch(`/student-scripts?batch_id=${encodeURIComponent(selectedBatch)}`, { withAuth: true });
       setScripts(data);
       setStatus('Script deleted from PostgreSQL and IndexedDB.');
     } catch (err) {

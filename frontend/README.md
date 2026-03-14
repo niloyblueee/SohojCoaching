@@ -1,5 +1,11 @@
 # React + Vite
 
+## Architecture
+
+See frontend module layout and auth/service design in:
+
+- `docs/architecture.md`
+
 ## Environment Setup
 
 Create a `.env` file (or use existing one) and set backend API URL:
@@ -9,6 +15,8 @@ VITE_API_BASE_URL=http://localhost:3000
 ```
 
 The Management dashboard uses this variable and does not hardcode backend host.
+
+API access is centralized through shared service modules, so auth header handling and request logic are not duplicated across pages.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

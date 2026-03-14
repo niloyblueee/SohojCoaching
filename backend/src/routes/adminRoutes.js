@@ -1,0 +1,292 @@
+import { Router } from 'express';
+import { randomUUID } from 'crypto';
+import { requireAdmin, requireAuth } from '../middleware/auth.js';
+import { isUuid } from '../utils/validators.js';
+
+export const createAdminRoutes = (prisma) => {
+    const adminRoutes = Router();
+    adminRoutes.use(requireAuth, requireAdmin);
+
+    // POST /api/study-materials
+    adminRoutes.post('/study-materials', async (req, res) => {
+        const { batch_id, file_name, file_type, uploaded_by } = req.body;
+
+        if (!isUuid(batch_id) || !isUuid(uploaded_by)) {
+            return res.status(400).json({ error: 'batch_id and uploaded_by must be valid UUIDs.' });
+        }
+
+        if (!file_name || !file_type) {
+            return res.status(400).json({ error: 'file_name and file_type are required.' });
+        }
+
+        const id = randomUUID();
+        const storageUrl = `idb-proxy://study-materials/${id}`;
+
+        try {
+            const uploader = await prisma.user.findUnique({
+                where: { id: uploaded_by },
+                select: { id: true, role: true }
+            });
+
+            if (!uploader) {
+                return res.status(404).json({ error: 'Uploader not found in users table.' });
+            }
+
+            if (String(uploader.role).toLowerCase() !== 'teacher') {
+                return res.status(403).json({ error: 'Only users with teacher role can upload materials.' });
+            }
+
+            const material = await prisma.studyMaterial.create({
+                data: {
+                    id,
+                    batchId: batch_id,
+                    fileName: file_name,
+                    fileType: file_type,
+                    storageUrl,
+                    uploadedBy: uploaded_by
+                },
+                select: {
+                    id: true,
+                    batchId: true,
+                    fileName: true,
+                    fileType: true,
+                    storageUrl: true,
+                    uploadedAt: true,
+                    uploadedBy: true
+                }
+            });
+
+            res.status(201).json({
+                id: material.id,
+                batch_id: material.batchId,
+                file_name: material.fileName,
+                file_type: material.fileType,
+                storage_url: material.storageUrl,
+                uploaded_at: material.uploadedAt,
+                uploaded_by: material.uploadedBy
+            });
+        } catch (error) {
+            if (error.code === 'P2003') {
+                return res.status(400).json({ error: 'Invalid batch_id or uploaded_by (Foreign Key violation).' });
+            }
+            res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
+    // DELETE /api/study-materials/:id
+    adminRoutes.delete('/study-materials/:id', async (req, res) => {
+        const { id } = req.params;
+
+        if (!isUuid(id)) {
+            return res.status(400).json({ error: 'Invalid UUID for material id.' });
+        }
+
+        try {
+            await prisma.studyMaterial.delete({ where: { id } });
+            res.json({ message: 'Study material deleted.' });
+        } catch (error) {
+            if (error.code === 'P2025') {
+                return res.status(404).json({ error: 'Study material not found.' });
+            }
+            res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
+    // POST /api/enrollments
+    adminRoutes.post('/enrollments', async (req, res) => {
+        const { student_id, batch_id } = req.body;
+        try {
+            const batchExists = await prisma.batch.findUnique({ where: { id: batch_id } });
+            if (!batchExists) return res.status(404).json({ error: 'Batch not found' });
+
+            const enrollment = await prisma.enrollment.create({
+                data: {
+                    studentId: student_id,
+                    batchId: batch_id,
+                    status: 'active'
+                }
+            });
+            res.status(201).json(enrollment);
+        } catch (error) {
+            if (error.code === 'P2002') return res.status(409).json({ error: 'Student is already enrolled in this batch.' });
+            if (error.code === 'P2003') return res.status(400).json({ error: 'Invalid student or batch ID (Foreign Key violation).' });
+            res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
+    // DELETE /api/enrollments/:id
+    adminRoutes.delete('/enrollments/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            const enrollment = await prisma.enrollment.update({
+                where: { id },
+                data: { status: 'dropped' }
+            });
+            res.json(enrollment);
+        } catch (error) {
+            if (error.code === 'P2025') return res.status(404).json({ error: 'Enrollment not found.' });
+            res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
+    // POST /api/assignments
+    adminRoutes.post('/assignments', async (req, res) => {
+        const { teacher_id, batch_id, role } = req.body;
+        try {
+            const assignment = await prisma.teacherAssignment.create({
+                data: {
+                    teacherId: teacher_id,
+                    batchId: batch_id,
+                    role
+                }
+            });
+            res.status(201).json(assignment);
+        } catch (error) {
+            if (error.code === 'P2003') return res.status(400).json({ error: 'Invalid teacher or batch ID (Foreign Key violation).' });
+            res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
+    // DELETE /api/assignments/:id
+    adminRoutes.delete('/assignments/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            const deletedAssignment = await prisma.teacherAssignment.delete({ where: { id } });
+            res.json({ message: 'Teacher assignment removed.', deletedAssignment });
+        } catch (error) {
+            res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
+    // GET /api/batches/:batchId/members
+    adminRoutes.get('/batches/:batchId/members', async (req, res) => {
+        const { batchId } = req.params;
+        try {
+            const enrollments = await prisma.enrollment.findMany({
+                where: { batchId, status: 'active' },
+                include: { student: true }
+            });
+
+            const assignments = await prisma.teacherAssignment.findMany({
+                where: { batchId },
+                include: { teacher: true }
+            });
+
+            res.json({
+                students: enrollments.map((enrollment) => ({
+                    enrollmentId: enrollment.id,
+                    studentId: enrollment.student.id,
+                    name: enrollment.student.name,
+                    status: enrollment.status
+                })),
+                teachers: assignments.map((assignment) => ({
+                    assignmentId: assignment.id,
+                    teacherId: assignment.teacher.id,
+                    name: assignment.teacher.name,
+                    role: assignment.role
+                }))
+            });
+        } catch (error) {
+            res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
+    // POST /api/student-scripts
+    adminRoutes.post('/student-scripts', async (req, res) => {
+        const { student_id, batch_id, exam_name, uploaded_by } = req.body;
+
+        if (!isUuid(student_id) || !isUuid(batch_id) || !isUuid(uploaded_by)) {
+            return res.status(400).json({ error: 'student_id, batch_id, and uploaded_by must be valid UUIDs.' });
+        }
+
+        if (!exam_name || !String(exam_name).trim()) {
+            return res.status(400).json({ error: 'exam_name is required.' });
+        }
+
+        try {
+            const uploader = await prisma.user.findUnique({
+                where: { id: uploaded_by },
+                select: { id: true, role: true }
+            });
+            if (!uploader) return res.status(404).json({ error: 'Uploader not found.' });
+            if (String(uploader.role).toLowerCase() !== 'teacher') {
+                return res.status(403).json({ error: 'Only teachers can upload exam scripts.' });
+            }
+
+            const student = await prisma.user.findUnique({
+                where: { id: student_id },
+                select: { id: true, role: true }
+            });
+            if (!student) return res.status(404).json({ error: 'Student not found.' });
+            if (String(student.role).toLowerCase() !== 'student') {
+                return res.status(400).json({ error: 'Target user is not a student.' });
+            }
+
+            const enrollment = await prisma.enrollment.findFirst({
+                where: { studentId: student_id, batchId: batch_id, status: 'active' },
+                select: { id: true }
+            });
+            if (!enrollment) {
+                return res.status(403).json({ error: 'Student is not actively enrolled in the specified batch.' });
+            }
+
+            const id = randomUUID();
+            const storageUrl = `idb-proxy://student-scripts/${id}`;
+
+            const script = await prisma.studentScript.create({
+                data: {
+                    id,
+                    studentId: student_id,
+                    batchId: batch_id,
+                    examName: String(exam_name).trim(),
+                    fileType: 'application/pdf',
+                    storageUrl,
+                    uploadedBy: uploaded_by
+                },
+                select: {
+                    id: true,
+                    studentId: true,
+                    batchId: true,
+                    examName: true,
+                    fileType: true,
+                    storageUrl: true,
+                    uploadedAt: true,
+                    uploadedBy: true
+                }
+            });
+
+            res.status(201).json({
+                id: script.id,
+                student_id: script.studentId,
+                batch_id: script.batchId,
+                exam_name: script.examName,
+                file_type: script.fileType,
+                storage_url: script.storageUrl,
+                uploaded_at: script.uploadedAt,
+                uploaded_by: script.uploadedBy
+            });
+        } catch (error) {
+            if (error.code === 'P2003') return res.status(400).json({ error: 'Invalid FK: student_id, batch_id, or uploaded_by.' });
+            res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
+    // DELETE /api/student-scripts/:id
+    adminRoutes.delete('/student-scripts/:id', async (req, res) => {
+        const { id } = req.params;
+
+        if (!isUuid(id)) {
+            return res.status(400).json({ error: 'Invalid UUID for script id.' });
+        }
+
+        try {
+            await prisma.studentScript.delete({ where: { id } });
+            res.json({ message: 'Script deleted.' });
+        } catch (error) {
+            if (error.code === 'P2025') return res.status(404).json({ error: 'Script not found.' });
+            res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
+    return adminRoutes;
+};

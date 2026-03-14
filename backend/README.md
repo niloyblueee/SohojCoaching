@@ -1,5 +1,11 @@
 # SohojCoaching Backend
 
+## Architecture
+
+See modular backend structure in:
+
+- `docs/architecture.md`
+
 ## Database Setup (Railway/PostgreSQL)
 
 1. Set your PostgreSQL connection string in `.env`:

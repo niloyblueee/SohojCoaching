@@ -1,20 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getScriptBlob } from './services/indexedDbScriptProxy';
 import './ExamScripts.css';
-
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
-const API_URL  = `${BASE_URL}/api`;
-
-async function apiFetch(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    ...options
-  });
-  const contentType = response.headers.get('content-type') || '';
-  const payload     = contentType.includes('application/json') ? await response.json() : null;
-  if (!response.ok) throw new Error(payload?.error || `Request failed (${response.status})`);
-  return payload;
-}
+import { apiFetch } from './services/httpClient';
 
 // ── Security helper ───────────────────────────────────────────────────────────
 // FR-18: The student view NEVER exposes a way for the user to set an arbitrary
@@ -28,11 +15,11 @@ async function apiFetch(path, options = {}) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function MyScriptsView() {
-  const [students,         setStudents]         = useState([]);
-  const [loggedInStudent,  setLoggedInStudent]  = useState(''); // simulates session
-  const [scripts,          setScripts]          = useState([]);
-  const [status,           setStatus]           = useState('');
-  const [loadingScripts,   setLoadingScripts]   = useState(false);
+  const [students, setStudents] = useState([]);
+  const [loggedInStudent, setLoggedInStudent] = useState(''); // simulates session
+  const [scripts, setScripts] = useState([]);
+  const [status, setStatus] = useState('');
+  const [loadingScripts, setLoadingScripts] = useState(false);
 
   // Load student list (simulates "who is logged in?" for demo purposes)
   useEffect(() => {
@@ -103,9 +90,9 @@ function MyScriptsView() {
         setStatus(`PDF for "${script.exam_name}" is not available in local storage yet.`);
         return;
       }
-      const url    = URL.createObjectURL(entry.blob);
+      const url = URL.createObjectURL(entry.blob);
       const anchor = document.createElement('a');
-      anchor.href     = url;
+      anchor.href = url;
       anchor.download = `${script.exam_name.replace(/\s+/g, '_')}.pdf`;
       document.body.appendChild(anchor);
       anchor.click();
@@ -176,7 +163,7 @@ function MyScriptsView() {
                   <td>{s.batch?.name || '—'}</td>
                   <td>{new Date(s.uploaded_at).toLocaleString()}</td>
                   <td className="action-cell">
-                    <button className="view-btn"     onClick={() => onView(s)}>View</button>
+                    <button className="view-btn" onClick={() => onView(s)}>View</button>
                     <button className="download-btn" onClick={() => onDownload(s)}>Download</button>
                   </td>
                 </tr>

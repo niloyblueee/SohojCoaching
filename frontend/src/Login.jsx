@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import './Login.css';
-
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+import { login } from './services/authApi';
 
 function Login({ onAuthSuccess }) {
     const loginTypes = useMemo(
@@ -103,21 +102,11 @@ function Login({ onAuthSuccess }) {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch(`${BASE_URL}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    role: selectedType,
-                    email: formValues.email.trim(),
-                    password: formValues.password
-                })
+            const payload = await login({
+                role: selectedType,
+                email: formValues.email.trim(),
+                password: formValues.password
             });
-
-            const payload = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                throw new Error(payload?.error || 'Login failed.');
-            }
 
             if (typeof onAuthSuccess === 'function') {
                 onAuthSuccess(payload);

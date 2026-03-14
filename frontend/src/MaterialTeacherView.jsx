@@ -1,43 +1,9 @@
 import { useEffect, useState } from 'react';
 import { saveMaterialBlob, deleteMaterialBlob } from './services/indexedDbMaterialProxy';
 import './StudyMaterials.css';
+import { apiFetch } from './services/httpClient';
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
-const API_URL = `${BASE_URL}/api`;
 const ACCEPT_TYPES = '.pdf,.doc,.docx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation';
-const AUTH_STORAGE_KEY = 'sohojcoaching_auth';
-
-const getAuthHeaders = () => {
-  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw);
-    if (!parsed?.token) return {};
-    return { Authorization: `Bearer ${parsed.token}` };
-  } catch {
-    return {};
-  }
-};
-
-async function apiFetch(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeaders(),
-      ...(options.headers || {})
-    },
-    ...options
-  });
-
-  const contentType = response.headers.get('content-type') || '';
-  const payload = contentType.includes('application/json') ? await response.json() : null;
-
-  if (!response.ok) {
-    throw new Error(payload?.error || `Request failed (${response.status})`);
-  }
-
-  return payload;
-}
 
 function MaterialTeacherView() {
   const [batches, setBatches] = useState([]);
@@ -53,8 +19,8 @@ function MaterialTeacherView() {
     setStatus('');
     try {
       const [batchData, teacherData] = await Promise.all([
-        apiFetch('/batches'),
-        apiFetch('/teachers')
+        apiFetch('/batches', { withAuth: true }),
+        apiFetch('/teachers', { withAuth: true })
       ]);
       setBatches(batchData);
       setTeachers(teacherData);
@@ -71,7 +37,7 @@ function MaterialTeacherView() {
     }
 
     try {
-      const data = await apiFetch(`/study-materials?batch_id=${encodeURIComponent(batchId)}`);
+      const data = await apiFetch(`/study-materials?batch_id=${encodeURIComponent(batchId)}`, { withAuth: true });
       setMaterials(data);
     } catch (error) {
       setStatus(error.message);
@@ -100,12 +66,13 @@ function MaterialTeacherView() {
     try {
       const metadata = await apiFetch('/study-materials', {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           batch_id: selectedBatch,
           file_name: file.name,
           file_type: file.type || 'application/octet-stream',
           uploaded_by: selectedTeacher
-        })
+        },
+        withAuth: true
       });
 
       await saveMaterialBlob(metadata.id, file, metadata.file_name, metadata.file_type);
@@ -125,7 +92,7 @@ function MaterialTeacherView() {
   const onDelete = async (materialId) => {
     setStatus('');
     try {
-      await apiFetch(`/study-materials/${materialId}`, { method: 'DELETE' });
+      await apiFetch(`/study-materials/${materialId}`, { method: 'DELETE', withAuth: true });
       await deleteMaterialBlob(materialId);
       await loadMaterials(selectedBatch);
       setStatus('Material deleted from Postgres and IndexedDB.');

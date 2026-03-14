@@ -1,21 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import './ManagementDashboard.css';
-
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
-const API_URL = `${BASE_URL}/api`;
-const AUTH_STORAGE_KEY = 'sohojcoaching_auth';
-
-const getAuthHeaders = () => {
-  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw);
-    if (!parsed?.token) return {};
-    return { Authorization: `Bearer ${parsed.token}` };
-  } catch {
-    return {};
-  }
-};
+import { apiFetch } from './services/httpClient';
 
 const ManagementDashboard = () => {
   const [batches, setBatches] = useState([]);
@@ -37,35 +22,14 @@ const ManagementDashboard = () => {
     });
   }, [students, studentSearch]);
 
-  const apiFetch = async (path, options = {}) => {
-    const response = await fetch(`${API_URL}${path}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(),
-        ...(options.headers || {})
-      },
-      ...options
-    });
-
-    const contentType = response.headers.get('content-type') || '';
-    const payload = contentType.includes('application/json') ? await response.json() : null;
-
-    if (!response.ok) {
-      const errorMessage = payload?.error || `Request failed with status ${response.status}`;
-      throw new Error(errorMessage);
-    }
-
-    return payload;
-  };
-
   const loadInitialData = async () => {
     setLoading(true);
     setMessage('');
     try {
       const [batchData, studentData, teacherData] = await Promise.all([
-        apiFetch('/batches'),
-        apiFetch('/students'),
-        apiFetch('/teachers')
+        apiFetch('/batches', { withAuth: true }),
+        apiFetch('/students', { withAuth: true }),
+        apiFetch('/teachers', { withAuth: true })
       ]);
       setBatches(batchData);
       setStudents(studentData);
@@ -84,7 +48,7 @@ const ManagementDashboard = () => {
     }
 
     try {
-      const data = await apiFetch(`/batches/${batchId}/members`);
+      const data = await apiFetch(`/batches/${batchId}/members`, { withAuth: true });
       setBatchMembers(data);
     } catch (error) {
       setMessage(error.message);
@@ -110,7 +74,8 @@ const ManagementDashboard = () => {
     try {
       await apiFetch('/enrollments', {
         method: 'POST',
-        body: JSON.stringify({ student_id: enrollForm.studentId, batch_id: selectedBatchId })
+        body: { student_id: enrollForm.studentId, batch_id: selectedBatchId },
+        withAuth: true
       });
       setEnrollForm({ studentId: '' });
       await fetchBatchMembers(selectedBatchId);
@@ -131,11 +96,12 @@ const ManagementDashboard = () => {
     try {
       await apiFetch('/assignments', {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           teacher_id: assignForm.teacherId,
           batch_id: selectedBatchId,
           role: assignForm.role.trim()
-        })
+        },
+        withAuth: true
       });
       setAssignForm((prev) => ({ ...prev, teacherId: '' }));
       await fetchBatchMembers(selectedBatchId);
@@ -148,7 +114,7 @@ const ManagementDashboard = () => {
   const handleDropStudent = async (enrollmentId) => {
     setMessage('');
     try {
-      await apiFetch(`/enrollments/${enrollmentId}`, { method: 'DELETE' });
+      await apiFetch(`/enrollments/${enrollmentId}`, { method: 'DELETE', withAuth: true });
       await fetchBatchMembers(selectedBatchId);
       setMessage('Student removed from batch.');
     } catch (error) {
@@ -159,7 +125,7 @@ const ManagementDashboard = () => {
   const handleUnassignTeacher = async (assignmentId) => {
     setMessage('');
     try {
-      await apiFetch(`/assignments/${assignmentId}`, { method: 'DELETE' });
+      await apiFetch(`/assignments/${assignmentId}`, { method: 'DELETE', withAuth: true });
       await fetchBatchMembers(selectedBatchId);
       setMessage('Teacher unassigned from batch.');
     } catch (error) {
