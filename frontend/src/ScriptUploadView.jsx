@@ -3,34 +3,47 @@ import { saveScriptBlob, deleteScriptBlob } from './services/indexedDbScriptProx
 import './ExamScripts.css';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
-const API_URL  = `${BASE_URL}/api`;
+const API_URL = `${BASE_URL}/api`;
+const AUTH_STORAGE_KEY = 'sohojcoaching_auth';
+
+const getAuthHeaders = () => {
+  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed?.token) return {};
+    return { Authorization: `Bearer ${parsed.token}` };
+  } catch {
+    return {};
+  }
+};
 
 async function apiFetch(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders(), ...(options.headers || {}) },
     ...options
   });
   const contentType = response.headers.get('content-type') || '';
-  const payload     = contentType.includes('application/json') ? await response.json() : null;
+  const payload = contentType.includes('application/json') ? await response.json() : null;
   if (!response.ok) throw new Error(payload?.error || `Request failed (${response.status})`);
   return payload;
 }
 
 function ScriptUploadView() {
-  const [batches,         setBatches]         = useState([]);
-  const [teachers,        setTeachers]        = useState([]);
-  const [batchStudents,   setBatchStudents]   = useState([]); // students enrolled in selected batch
-  const [selectedBatch,   setSelectedBatch]   = useState('');
+  const [batches, setBatches] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [batchStudents, setBatchStudents] = useState([]); // students enrolled in selected batch
+  const [selectedBatch, setSelectedBatch] = useState('');
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [selectedStudent, setSelectedStudent] = useState('');
-  const [studentSearch,   setStudentSearch]   = useState('');
-  const [examName,        setExamName]        = useState('');
-  const [file,            setFile]            = useState(null);
-  const [isDragOver,      setIsDragOver]      = useState(false);
-  const [isSyncing,       setIsSyncing]       = useState(false);
-  const [progress,        setProgress]        = useState(0);
-  const [status,          setStatus]          = useState('');
-  const [scripts,         setScripts]         = useState([]);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [examName, setExamName] = useState('');
+  const [file, setFile] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState('');
+  const [scripts, setScripts] = useState([]);
 
   const fileInputRef = useRef(null);
 
@@ -88,9 +101,9 @@ function ScriptUploadView() {
   }, [selectedBatch]);
 
   // ── Drag-and-drop handlers ────────────────────────────────────────────────
-  const onDragOver  = (e) => { e.preventDefault(); setIsDragOver(true); };
-  const onDragLeave = ()  => setIsDragOver(false);
-  const onDrop      = (e) => {
+  const onDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
+  const onDragLeave = () => setIsDragOver(false);
+  const onDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
     const dropped = e.dataTransfer.files?.[0];
@@ -131,9 +144,9 @@ function ScriptUploadView() {
       const metadata = await apiFetch('/student-scripts', {
         method: 'POST',
         body: JSON.stringify({
-          student_id:  selectedStudent,
-          batch_id:    selectedBatch,
-          exam_name:   examName.trim(),
+          student_id: selectedStudent,
+          batch_id: selectedBatch,
+          exam_name: examName.trim(),
           uploaded_by: selectedTeacher
         })
       });

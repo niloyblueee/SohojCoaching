@@ -1,308 +1,115 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Nunito:wght@400;600;700&display=swap');
 
-:root {
-  --panel-bg: #f5f6fb;
-  --ink: #141838;
-  --muted: #5f6786;
-  --line: #d7deea;
-  --student-a: #04163b;
-  --student-b: #0d3992;
-  --teacher-a: #10322c;
-  --teacher-b: #0d826f;
-  --admin-a: #2f1b3f;
-  --admin-b: #b64b3e;
-}
-
-#root {
+.app-loading {
   min-height: 100vh;
-}
-
-.login-shell {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-  transition: background 500ms ease;
+  background: radial-gradient(circle at 20% 20%, #f3f7ff, #dce7ff 52%, #c8d9ff 100%);
+  font-family: 'Nunito', sans-serif;
+  color: #1f2a50;
 }
 
-.ambient-layer {
-  position: absolute;
-  inset: -15%;
+.admin-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
   background:
-    radial-gradient(circle at 18% 25%, rgba(255, 255, 255, 0.34), transparent 28%),
-    radial-gradient(circle at 75% 78%, rgba(255, 255, 255, 0.15), transparent 26%),
-    radial-gradient(circle at 86% 22%, rgba(255, 255, 255, 0.28), transparent 18%);
-  filter: blur(10px);
-  pointer-events: none;
+    radial-gradient(circle at 8% 10%, rgba(148, 181, 255, 0.28), transparent 30%),
+    radial-gradient(circle at 92% 88%, rgba(180, 214, 255, 0.25), transparent 32%),
+    linear-gradient(180deg, #edf2ff 0%, #d7e4ff 100%);
 }
 
-.role-student {
-  background: linear-gradient(135deg, var(--student-a) 0%, #061b61 45%, var(--student-b) 100%);
-}
-
-.role-teacher {
-  background: linear-gradient(130deg, var(--teacher-a) 0%, #15584f 42%, var(--teacher-b) 100%);
-}
-
-.role-admin {
-  background: linear-gradient(125deg, var(--admin-a) 0%, #5d275f 42%, var(--admin-b) 100%);
-}
-
-.login-card {
-  width: min(980px, 96vw);
-  min-height: 560px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 26px;
-  overflow: hidden;
-  box-shadow: 0 24px 60px rgba(5, 8, 28, 0.45);
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  position: relative;
-  z-index: 2;
-}
-
-.login-pane {
-  padding: 2.2rem 2.1rem;
-}
-
-.form-pane {
-  background: var(--panel-bg);
-  color: var(--ink);
+.admin-topbar {
   display: flex;
-  flex-direction: column;
-}
-
-.brand {
-  margin: 0;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #3f4f8c;
-  font-family: 'Chakra Petch', sans-serif;
-  font-weight: 700;
-}
-
-.title {
-  margin: 0.6rem 0 1rem;
-  font-size: 1.7rem;
-  font-family: 'Chakra Petch', sans-serif;
-  letter-spacing: 0.02em;
-}
-
-.role-switch {
-  margin-bottom: 1.2rem;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
-  padding: 0.4rem;
-  background: #e9eef8;
-  border-radius: 14px;
-}
-
-.role-tab {
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: #40548a;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 700;
-  padding: 0.6rem 0.4rem;
-  cursor: pointer;
-  transition: transform 220ms ease, background-color 220ms ease, color 220ms ease;
-}
-
-.role-tab:hover {
-  transform: translateY(-1px);
-}
-
-.role-tab.active {
-  background: linear-gradient(120deg, #1a2766, #2f73af);
-  color: #f8faff;
-  box-shadow: 0 8px 20px rgba(39, 85, 140, 0.35);
-}
-
-.login-form {
-  display: grid;
-  gap: 0.85rem;
-  margin-top: 0.6rem;
-}
-
-.login-form input {
-  border: 1px solid var(--line);
-  background: #ffffff;
-  color: #1a2142;
-  border-radius: 999px;
-  padding: 0.78rem 1rem;
-  font-size: 1rem;
-  font-family: 'Nunito', sans-serif;
-  transition: border-color 220ms ease, box-shadow 220ms ease;
-}
-
-.login-form input:focus {
-  border-color: #3f67dc;
-  box-shadow: 0 0 0 3px rgba(88, 126, 241, 0.2);
-  outline: none;
-}
-
-.submit-btn {
-  margin-top: 0.6rem;
-  border: 0;
-  border-radius: 999px;
-  padding: 0.8rem 1.2rem;
-  font-size: 0.96rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #ffffff;
-  background: linear-gradient(90deg, #131f60 0%, #235196 100%);
-  font-family: 'Chakra Petch', sans-serif;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 220ms ease, box-shadow 220ms ease;
-}
-
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(25, 57, 125, 0.32);
-}
-
-.helper-text {
-  margin-top: auto;
-  color: var(--muted);
-  font-size: 0.95rem;
-  font-family: 'Nunito', sans-serif;
-}
-
-.visual-pane {
-  position: relative;
-  isolation: isolate;
-  color: #f5f8ff;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: hidden;
-  animation: panelReveal 420ms ease;
-}
-
-.visual-pane::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(circle at 85% 24%, rgba(255, 255, 255, 0.2), transparent 35%),
-    radial-gradient(circle at 18% 78%, rgba(255, 255, 255, 0.16), transparent 30%);
-}
-
-.role-student .visual-pane {
-  background:
-    linear-gradient(145deg, rgba(2, 18, 59, 0.94), rgba(9, 46, 139, 0.88)),
-    linear-gradient(35deg, rgba(255, 255, 255, 0.06), transparent 50%);
-}
-
-.role-teacher .visual-pane {
-  background:
-    linear-gradient(145deg, rgba(11, 57, 48, 0.95), rgba(7, 121, 104, 0.88)),
-    linear-gradient(40deg, rgba(255, 255, 255, 0.08), transparent 50%);
-}
-
-.role-admin .visual-pane {
-  background:
-    linear-gradient(145deg, rgba(54, 24, 62, 0.95), rgba(145, 46, 71, 0.88)),
-    linear-gradient(40deg, rgba(255, 255, 255, 0.1), transparent 55%);
-}
-
-.role-badge {
-  display: inline-flex;
+  justify-content: space-between;
+  gap: 1rem;
   align-items: center;
-  justify-content: center;
-  height: 52px;
-  width: 52px;
-  border-radius: 50%;
-  font-family: 'Chakra Petch', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(4px);
-  margin-bottom: 1rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid #c8d7f6;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(6px);
 }
 
-.visual-pane h1 {
+.admin-topbar h1 {
+  margin: 0.2rem 0 0;
+  font-size: 1.4rem;
+  font-family: 'Chakra Petch', sans-serif;
+  color: #1a2f69;
+}
+
+.admin-brand {
   margin: 0;
-  font-size: clamp(1.7rem, 3vw, 2.35rem);
-  font-family: 'Chakra Petch', sans-serif;
-  line-height: 1.15;
-}
-
-.visual-pane p {
-  margin: 0.75rem 0 0;
-  max-width: 32ch;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   font-family: 'Nunito', sans-serif;
-  font-size: 1.02rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #445d9b;
 }
 
-.visual-pane .note {
-  margin-top: 1rem;
-  font-size: 0.95rem;
-  opacity: 0.9;
+.admin-session {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: #314980;
 }
 
-.shape {
-  position: absolute;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  pointer-events: none;
-}
-
-.shape-a {
-  width: 210px;
-  height: 210px;
-  right: -52px;
-  top: -52px;
-  border-radius: 38% 62% 46% 54%;
-  animation: drift 10s ease-in-out infinite;
-}
-
-.shape-b {
-  width: 140px;
-  height: 140px;
-  left: 10%;
-  top: 16%;
-  border-radius: 48% 52% 38% 62%;
-  animation: drift 8s ease-in-out infinite reverse;
-}
-
-.shape-c {
-  width: 96px;
-  height: 96px;
-  right: 18%;
-  bottom: 16%;
-  border-radius: 22px;
-  transform: rotate(22deg);
-  animation: floatUp 6s ease-in-out infinite;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+.admin-session button {
   border: 0;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0.45rem 0.85rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: #f7f9ff;
+  background: linear-gradient(120deg, #2d3b7f, #365ea4);
+  cursor: pointer;
 }
 
-@keyframes panelReveal {
-  from {
-    transform: translateX(14px);
-    opacity: 0;
+.admin-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 0.7rem 1.2rem 0.8rem;
+}
+
+.admin-nav a {
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 0.5rem 0.85rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: #34508f;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid #c1d0ef;
+}
+
+.admin-nav a.active {
+  color: #f8fbff;
+  border-color: transparent;
+  background: linear-gradient(120deg, #2d3b7f, #3a79c1);
+}
+
+.admin-content {
+  padding: 0.5rem 1rem 1rem;
+}
+
+@media (max-width: 720px) {
+  .admin-topbar {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
-  to {
-    transform: translateX(0);
+  .admin-session {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .admin-content {
+    padding: 0.3rem 0.6rem 0.8rem;
+    opacity: 0;
     opacity: 1;
   }
 }

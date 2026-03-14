@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import './Login.css';
 
-function Login() {
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+
+function Login({ onAuthSuccess }) {
     const loginTypes = useMemo(
         () => [
             {
@@ -40,6 +42,18 @@ function Login() {
 
     const [selectedType, setSelectedType] = useState('student');
     const [authMode, setAuthMode] = useState('login');
+    const [formValues, setFormValues] = useState({
+        fullName: '',
+        email: '',
+        classLevel: '',
+        subject: '',
+        password: '',
+        confirmPassword: ''
+    });
+    const [status, setStatus] = useState('');
+    const [statusType, setStatusType] = useState('neutral');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const activeType = loginTypes.find((type) => type.id === selectedType) || loginTypes[0];
     const supportsSignup = selectedType === 'student' || selectedType === 'teacher';
     const isSignup = supportsSignup && authMode === 'signup';
@@ -49,6 +63,72 @@ function Login() {
             setAuthMode('login');
         }
     }, [authMode, supportsSignup]);
+
+    useEffect(() => {
+        setStatus('');
+        setStatusType('neutral');
+    }, [selectedType, authMode]);
+
+    const onFieldChange = (event) => {
+        const { id, value } = event.target;
+        setFormValues((prev) => ({ ...prev, [id]: value }));
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setStatus('');
+
+        if (!formValues.email.trim() || !formValues.password.trim()) {
+            setStatusType('error');
+            setStatus('Email and password are required.');
+            return;
+        }
+
+        if (isSignup) {
+            if (!formValues.fullName.trim()) {
+                setStatusType('error');
+                setStatus('Full Name is required for sign up.');
+                return;
+            }
+            if (formValues.password !== formValues.confirmPassword) {
+                setStatusType('error');
+                setStatus('Password and Confirm Password do not match.');
+                return;
+            }
+
+            setStatusType('info');
+            setStatus('Signup UI is ready. Backend signup endpoint is not connected yet.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const response = await fetch(`${BASE_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    role: selectedType,
+                    email: formValues.email.trim(),
+                    password: formValues.password
+                })
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(payload?.error || 'Login failed.');
+            }
+
+            if (typeof onAuthSuccess === 'function') {
+                onAuthSuccess(payload);
+            }
+        } catch (error) {
+            setStatusType('error');
+            setStatus(error.message || 'Unable to login right now.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <main className={`login-shell role-${activeType.id}`}>
@@ -117,27 +197,48 @@ function Login() {
                     )}
 
                     <div className="auth-form-shell" key={`${selectedType}-${isSignup ? 'signup' : 'login'}`}>
-                        <form className="login-form">
+                        <form className="login-form" onSubmit={handleSubmit}>
                             {isSignup && (
                                 <>
                                     <label htmlFor="fullName" className="sr-only">
                                         Full Name
                                     </label>
-                                    <input id="fullName" type="text" placeholder="Full Name" autoComplete="name" />
+                                    <input
+                                        id="fullName"
+                                        type="text"
+                                        placeholder="Full Name"
+                                        autoComplete="name"
+                                        value={formValues.fullName}
+                                        onChange={onFieldChange}
+                                    />
                                 </>
                             )}
 
                             <label htmlFor="email" className="sr-only">
                                 Email
                             </label>
-                            <input id="email" type="email" placeholder="Email" autoComplete="email" />
+                            <input
+                                id="email"
+                                type="email"
+                                placeholder="Email"
+                                autoComplete="email"
+                                value={formValues.email}
+                                onChange={onFieldChange}
+                            />
 
                             {isSignup && selectedType === 'student' && (
                                 <>
                                     <label htmlFor="classLevel" className="sr-only">
                                         Class / Batch
                                     </label>
-                                    <input id="classLevel" type="text" placeholder="Class / Batch" autoComplete="off" />
+                                    <input
+                                        id="classLevel"
+                                        type="text"
+                                        placeholder="Class / Batch"
+                                        autoComplete="off"
+                                        value={formValues.classLevel}
+                                        onChange={onFieldChange}
+                                    />
                                 </>
                             )}
 
@@ -146,7 +247,14 @@ function Login() {
                                     <label htmlFor="subject" className="sr-only">
                                         Subject
                                     </label>
-                                    <input id="subject" type="text" placeholder="Subject" autoComplete="off" />
+                                    <input
+                                        id="subject"
+                                        type="text"
+                                        placeholder="Subject"
+                                        autoComplete="off"
+                                        value={formValues.subject}
+                                        onChange={onFieldChange}
+                                    />
                                 </>
                             )}
 
@@ -158,6 +266,8 @@ function Login() {
                                 type="password"
                                 placeholder="Password"
                                 autoComplete={isSignup ? 'new-password' : 'current-password'}
+                                value={formValues.password}
+                                onChange={onFieldChange}
                             />
 
                             {isSignup && (
@@ -170,17 +280,23 @@ function Login() {
                                         type="password"
                                         placeholder="Confirm Password"
                                         autoComplete="new-password"
+                                        value={formValues.confirmPassword}
+                                        onChange={onFieldChange}
                                     />
                                 </>
                             )}
 
-                            <button type="button" className="submit-btn">
+                            <button type="submit" className="submit-btn" disabled={isSubmitting}>
                                 {isSignup
                                     ? `Create ${selectedType === 'student' ? 'Student' : 'Teacher'} Account`
-                                    : activeType.buttonText}
+                                    : isSubmitting
+                                        ? 'Signing In...'
+                                        : activeType.buttonText}
                             </button>
                         </form>
                     </div>
+
+                    {!!status && <p className={`auth-status auth-status-${statusType}`}>{status}</p>}
 
                     <p className="helper-text">
                         {supportsSignup

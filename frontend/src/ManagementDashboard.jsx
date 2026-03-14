@@ -3,6 +3,19 @@ import './ManagementDashboard.css';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
 const API_URL = `${BASE_URL}/api`;
+const AUTH_STORAGE_KEY = 'sohojcoaching_auth';
+
+const getAuthHeaders = () => {
+  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed?.token) return {};
+    return { Authorization: `Bearer ${parsed.token}` };
+  } catch {
+    return {};
+  }
+};
 
 const ManagementDashboard = () => {
   const [batches, setBatches] = useState([]);
@@ -28,6 +41,7 @@ const ManagementDashboard = () => {
     const response = await fetch(`${API_URL}${path}`, {
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
         ...(options.headers || {})
       },
       ...options
@@ -185,7 +199,7 @@ const ManagementDashboard = () => {
             </div>
             <div className="form-group">
               <label>Select Student</label>
-              <select value={enrollForm.studentId} onChange={e => setEnrollForm({...enrollForm, studentId: e.target.value})}>
+              <select value={enrollForm.studentId} onChange={e => setEnrollForm({ ...enrollForm, studentId: e.target.value })}>
                 <option value="">-- Choose Student --</option>
                 {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name} ({s.email})</option>)}
               </select>
@@ -200,18 +214,18 @@ const ManagementDashboard = () => {
           <form onSubmit={handleTeacherAssignment}>
             <div className="form-group">
               <label>Select Teacher</label>
-              <select value={assignForm.teacherId} onChange={e => setAssignForm({...assignForm, teacherId: e.target.value})}>
+              <select value={assignForm.teacherId} onChange={e => setAssignForm({ ...assignForm, teacherId: e.target.value })}>
                 <option value="">-- Choose Teacher --</option>
                 {teachers.map(t => <option key={t.id} value={t.id}>{t.name} ({t.email})</option>)}
               </select>
             </div>
             <div className="form-group">
               <label>Role / Position</label>
-              <input 
-                type="text" 
-                value={assignForm.role} 
-                onChange={e => setAssignForm({...assignForm, role: e.target.value})}
-                placeholder="e.g. Lead, Assistant" 
+              <input
+                type="text"
+                value={assignForm.role}
+                onChange={e => setAssignForm({ ...assignForm, role: e.target.value })}
+                placeholder="e.g. Lead, Assistant"
               />
             </div>
             <button type="submit" className="btn-primary" disabled={!selectedBatchId}>Assign Role</button>
@@ -224,7 +238,7 @@ const ManagementDashboard = () => {
         <section className="lists-section">
           <div className="batch-members">
             <h3>Active Lists for Selected Batch</h3>
-            
+
             <h4>Enrolled Students</h4>
             <table className="members-table">
               <thead>

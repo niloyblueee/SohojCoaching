@@ -7,6 +7,7 @@
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DBNAME"
 PORT=3000
+JWT_SECRET="change-this-secret"
 ```
 
 2. Run one command to setup tables:
@@ -36,6 +37,18 @@ psql "$DATABASE_URL" -f sql/setup_tables.sql
 ```bash
 npm run start
 ```
+
+## Admin JWT Login (Demo)
+
+Use `POST /api/auth/login` with role `admin` and one of these pre-added admin IDs:
+
+1. `admin1@sohojcoaching.com` / `Admin123!`
+2. `admin2@sohojcoaching.com` / `Admin123!`
+3. `admin3@sohojcoaching.com` / `Admin123!`
+
+The API returns a JWT token. Send it as a bearer token:
+
+`Authorization: Bearer <token>`
 
 ## Seed Management Test Data
 

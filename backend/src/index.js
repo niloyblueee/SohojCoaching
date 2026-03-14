@@ -2,6 +2,7 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
 import { randomUUID } from 'crypto';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const app = express();
@@ -9,9 +10,120 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const JWT_SECRET = process.env.JWT_SECRET || 'sohojcoaching-dev-jwt-secret-change-me';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
+
+const ADMIN_ACCOUNTS = [
+  {
+    id: 'admin-001',
+    name: 'Admin One',
+    email: 'admin1@sohojcoaching.com',
+    password: 'Admin123!'
+  },
+  {
+    id: 'admin-002',
+    name: 'Admin Two',
+    email: 'admin2@sohojcoaching.com',
+    password: 'Admin123!'
+  },
+  {
+    id: 'admin-003',
+    name: 'Admin Three',
+    email: 'admin3@sohojcoaching.com',
+    password: 'Admin123!'
+  }
+];
+
 const isUuid = (value) => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value || '');
 };
+
+const issueToken = (user) => {
+  return jwt.sign(
+    {
+      sub: user.id,
+      role: user.role,
+      name: user.name,
+      email: user.email
+    },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
+};
+
+const getBearerToken = (req) => {
+  const authHeader = req.headers.authorization || '';
+  if (!authHeader.startsWith('Bearer ')) return null;
+  return authHeader.slice(7).trim();
+};
+
+const requireAuth = (req, res, next) => {
+  const token = getBearerToken(req);
+  if (!token) return res.status(401).json({ error: 'Authorization token is required.' });
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    req.auth = payload;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid or expired token.' });
+  }
+};
+
+const requireAdmin = (req, res, next) => {
+  if (!req.auth || req.auth.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required.' });
+  }
+  next();
+};
+
+// POST /api/auth/login
+app.post('/api/auth/login', async (req, res) => {
+  const { role, email, password } = req.body;
+
+  if (!role || !email || !password) {
+    return res.status(400).json({ error: 'role, email, and password are required.' });
+  }
+
+  if (String(role).toLowerCase() !== 'admin') {
+    return res.status(403).json({ error: 'JWT login is currently enabled for admin accounts only.' });
+  }
+
+  const admin = ADMIN_ACCOUNTS.find(
+    (account) => account.email.toLowerCase() === String(email).toLowerCase() && account.password === String(password)
+  );
+
+  if (!admin) {
+    return res.status(401).json({ error: 'Invalid admin credentials.' });
+  }
+
+  const user = {
+    id: admin.id,
+    name: admin.name,
+    email: admin.email,
+    role: 'admin'
+  };
+
+  const token = issueToken(user);
+
+  res.json({
+    token,
+    user,
+    redirectTo: '/admin/management'
+  });
+});
+
+// GET /api/auth/me
+app.get('/api/auth/me', requireAuth, (req, res) => {
+  res.json({
+    user: {
+      id: req.auth.sub,
+      name: req.auth.name,
+      email: req.auth.email,
+      role: req.auth.role
+    }
+  });
+});
 
 // GET /api/batches: List all batches
 app.get('/api/batches', async (_req, res) => {
@@ -101,7 +213,7 @@ app.get('/api/students/:studentId/batches', async (req, res) => {
 });
 
 // POST /api/study-materials: store metadata first in Postgres (FR-19)
-app.post('/api/study-materials', async (req, res) => {
+app.post('/api/study-materials', requireAuth, requireAdmin, async (req, res) => {
   const { batch_id, file_name, file_type, uploaded_by } = req.body;
 
   if (!isUuid(batch_id) || !isUuid(uploaded_by)) {
@@ -214,11 +326,11 @@ app.get('/api/study-materials', async (req, res) => {
         batch: material.batch,
         uploader: material.uploader
           ? {
-              id: material.uploader.id,
-              name: String(material.uploader.role).toLowerCase() === 'teacher' ? material.uploader.name : 'Former Teacher',
-              email: material.uploader.email,
-              role: material.uploader.role
-            }
+            id: material.uploader.id,
+            name: String(material.uploader.role).toLowerCase() === 'teacher' ? material.uploader.name : 'Former Teacher',
+            email: material.uploader.email,
+            role: material.uploader.role
+          }
           : { name: 'Former Teacher', role: 'unknown' }
       }))
     );
@@ -306,11 +418,11 @@ app.get('/api/students/:studentId/materials', async (req, res) => {
         batch: material.batch,
         uploader: material.uploader
           ? {
-              id: material.uploader.id,
-              name: String(material.uploader.role).toLowerCase() === 'teacher' ? material.uploader.name : 'Former Teacher',
-              email: material.uploader.email,
-              role: material.uploader.role
-            }
+            id: material.uploader.id,
+            name: String(material.uploader.role).toLowerCase() === 'teacher' ? material.uploader.name : 'Former Teacher',
+            email: material.uploader.email,
+            role: material.uploader.role
+          }
           : { name: 'Former Teacher', role: 'unknown' }
       }))
     );
@@ -320,7 +432,7 @@ app.get('/api/students/:studentId/materials', async (req, res) => {
 });
 
 // DELETE /api/study-materials/:id
-app.delete('/api/study-materials/:id', async (req, res) => {
+app.delete('/api/study-materials/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
 
   if (!isUuid(id)) {
@@ -341,7 +453,7 @@ app.delete('/api/study-materials/:id', async (req, res) => {
 });
 
 // POST /api/enrollments: Enroll a student into a batch
-app.post('/api/enrollments', async (req, res) => {
+app.post('/api/enrollments', requireAuth, requireAdmin, async (req, res) => {
   const { student_id, batch_id } = req.body;
   try {
     // Check if batch exists
@@ -365,7 +477,7 @@ app.post('/api/enrollments', async (req, res) => {
 });
 
 // DELETE /api/enrollments/:id: Soft delete (drop) an enrollment
-app.delete('/api/enrollments/:id', async (req, res) => {
+app.delete('/api/enrollments/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
   try {
     const enrollment = await prisma.enrollment.update({
@@ -380,7 +492,7 @@ app.delete('/api/enrollments/:id', async (req, res) => {
 });
 
 // POST /api/assignments: Assign a teacher to a batch
-app.post('/api/assignments', async (req, res) => {
+app.post('/api/assignments', requireAuth, requireAdmin, async (req, res) => {
   const { teacher_id, batch_id, role } = req.body;
   try {
     const assignment = await prisma.teacherAssignment.create({
@@ -398,7 +510,7 @@ app.post('/api/assignments', async (req, res) => {
 });
 
 // DELETE /api/assignments/:id: Remove a teacher from a batch
-app.delete('/api/assignments/:id', async (req, res) => {
+app.delete('/api/assignments/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
   try {
     const deletedAssignment = await prisma.teacherAssignment.delete({
@@ -411,7 +523,7 @@ app.delete('/api/assignments/:id', async (req, res) => {
 });
 
 // GET /api/batches/:batchId/members: Get members (students & teachers)
-app.get('/api/batches/:batchId/members', async (req, res) => {
+app.get('/api/batches/:batchId/members', requireAuth, requireAdmin, async (req, res) => {
   const { batchId } = req.params;
   try {
     // Get active enrollments
@@ -419,7 +531,7 @@ app.get('/api/batches/:batchId/members', async (req, res) => {
       where: { batchId: batchId, status: 'active' },
       include: { student: true }
     });
-    
+
     // Get teacher assignments
     const assignments = await prisma.teacherAssignment.findMany({
       where: { batchId: batchId },
@@ -427,17 +539,17 @@ app.get('/api/batches/:batchId/members', async (req, res) => {
     });
 
     res.json({
-      students: enrollments.map(e => ({ 
+      students: enrollments.map(e => ({
         enrollmentId: e.id,
-        studentId: e.student.id, 
-        name: e.student.name, 
-        status: e.status 
+        studentId: e.student.id,
+        name: e.student.name,
+        status: e.status
       })),
-      teachers: assignments.map(a => ({ 
+      teachers: assignments.map(a => ({
         assignmentId: a.id,
-        teacherId: a.teacher.id, 
-        name: a.teacher.name, 
-        role: a.role 
+        teacherId: a.teacher.id,
+        name: a.teacher.name,
+        role: a.role
       }))
     });
   } catch (error) {
@@ -450,7 +562,7 @@ app.get('/api/batches/:batchId/members', async (req, res) => {
 // POST /api/student-scripts
 // Teacher saves a graded script for a specific student in a batch.
 // Only PDF is accepted; the blob is stored in the client's IndexedDB using the returned id.
-app.post('/api/student-scripts', async (req, res) => {
+app.post('/api/student-scripts', requireAuth, requireAdmin, async (req, res) => {
   const { student_id, batch_id, exam_name, uploaded_by } = req.body;
 
   if (!isUuid(student_id) || !isUuid(batch_id) || !isUuid(uploaded_by)) {
@@ -546,7 +658,7 @@ app.get('/api/student-scripts', async (req, res) => {
 
   const where = {};
   if (student_id) where.studentId = student_id;
-  if (batch_id)   where.batchId   = batch_id;
+  if (batch_id) where.batchId = batch_id;
 
   try {
     // FR-18: when querying by student_id, confirm the user is actually a student
@@ -564,25 +676,25 @@ app.get('/api/student-scripts', async (req, res) => {
     const scripts = await prisma.studentScript.findMany({
       where,
       include: {
-        student:  { select: { id: true, name: true } },
-        batch:    { select: { id: true, name: true, course: true } },
+        student: { select: { id: true, name: true } },
+        batch: { select: { id: true, name: true, course: true } },
         uploader: { select: { id: true, name: true } }
       },
       orderBy: { uploadedAt: 'desc' }
     });
 
     res.json(scripts.map((s) => ({
-      id:          s.id,
-      student_id:  s.studentId,
-      batch_id:    s.batchId,
-      exam_name:   s.examName,
-      file_type:   s.fileType,
+      id: s.id,
+      student_id: s.studentId,
+      batch_id: s.batchId,
+      exam_name: s.examName,
+      file_type: s.fileType,
       storage_url: s.storageUrl,
       uploaded_at: s.uploadedAt,
       uploaded_by: s.uploadedBy,
-      student:     s.student,
-      batch:       s.batch,
-      uploader:    s.uploader
+      student: s.student,
+      batch: s.batch,
+      uploader: s.uploader
     })));
   } catch (error) {
     res.status(500).json({ error: 'Internal server error', details: error.message });
@@ -592,7 +704,7 @@ app.get('/api/student-scripts', async (req, res) => {
 // DELETE /api/student-scripts/:id
 // Teachers can remove a script record from Postgres.
 // The client is responsible for also removing the blob from IndexedDB.
-app.delete('/api/student-scripts/:id', async (req, res) => {
+app.delete('/api/student-scripts/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
 
   if (!isUuid(id)) {
@@ -617,7 +729,7 @@ async function startServer() {
     // Check Database connection before starting server
     await prisma.$connect();
     console.log('✅ Successfully connected to the database.');
-    
+
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
     });

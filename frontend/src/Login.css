@@ -238,6 +238,40 @@
     box-shadow: 0 10px 20px rgba(25, 57, 125, 0.32);
 }
 
+.submit-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.72;
+    transform: none;
+    box-shadow: none;
+}
+
+.auth-status {
+    margin: 0.7rem 0 0;
+    border-radius: 12px;
+    padding: 0.55rem 0.75rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem;
+    line-height: 1.35;
+}
+
+.auth-status-error {
+    background: #ffe9ee;
+    color: #8e2742;
+    border: 1px solid #f4bfd0;
+}
+
+.auth-status-info {
+    background: #e8f0ff;
+    color: #234683;
+    border: 1px solid #b7c9f2;
+}
+
+.auth-status-neutral {
+    background: #edf0f8;
+    color: #39456f;
+    border: 1px solid #d5dceb;
+}
+
 .helper-text {
     margin-top: auto;
     color: var(--muted);

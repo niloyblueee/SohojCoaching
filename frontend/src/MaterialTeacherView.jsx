@@ -5,11 +5,25 @@ import './StudyMaterials.css';
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
 const API_URL = `${BASE_URL}/api`;
 const ACCEPT_TYPES = '.pdf,.doc,.docx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+const AUTH_STORAGE_KEY = 'sohojcoaching_auth';
+
+const getAuthHeaders = () => {
+  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed?.token) return {};
+    return { Authorization: `Bearer ${parsed.token}` };
+  } catch {
+    return {};
+  }
+};
 
 async function apiFetch(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
       ...(options.headers || {})
     },
     ...options
