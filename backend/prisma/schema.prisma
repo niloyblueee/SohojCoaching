@@ -4,119 +4,126 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-// User model to represent both Students and Teachers for FK references.
-// (You can split these if you have separate tables, but role-based is common)
-model User {
-  id                  String               @id @default(uuid()) @db.Uuid
-  name                String
-  email               String               @unique
-  role                String               // e.g., 'student' or 'teacher'
-  passwordHash        String?              @map("password_hash")
-  enrollments         Enrollment[]
-  teacherAssignments  TeacherAssignment[]
-  configuredBatches   Batch[]              @relation("BatchTeacher")
-  uploadedMaterials   StudyMaterial[]
-  studentScripts      StudentScript[]      @relation("StudentScripts")
-  uploadedScripts     StudentScript[]      @relation("ScriptUploader")
-
-  @@map("users")
+model attendance {
+  attendanceid Int       @id @default(autoincrement())
+  userid       String?   @db.Uuid
+  classdate    DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+  ispresent    Boolean?
+  users        users?    @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model Batch {
-  id                  String               @id @default(uuid()) @db.Uuid
+model batches {
+  id                  String                @id @db.Uuid
   name                String
   course              String
-  batchName           String?              @unique @map("batch_name")
-  subject             String?
+  batch_name          String?               @unique
+  created_at          DateTime              @default(now())
+  monthly_fee         Decimal?              @db.Decimal(10, 2)
   schedule            String?
-  monthlyFee          Decimal?             @db.Decimal(10, 2) @map("monthly_fee")
-  discountedFee       Decimal?             @db.Decimal(10, 2) @map("discounted_fee")
-  batchDuration       String?              @map("batch_duration")
+  subject             String?
+  teacher_id          String?               @db.Uuid
+  batch_duration      String?
   description         String?
-  weeklyRoutine       Json?                @map("weekly_routine")
-  teacherId           String?              @db.Uuid @map("teacher_id")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  teacher             User?                @relation("BatchTeacher", fields: [teacherId], references: [id])
-  enrollments         Enrollment[]
-  teacherAssignments  TeacherAssignment[]
-  studyMaterials      StudyMaterial[]
-  studentScripts      StudentScript[]
+  discounted_fee      Decimal?              @db.Decimal(10, 2)
+  weekly_routine      Json?
+  users               users?                @relation(fields: [teacher_id], references: [id])
+  enrollments         enrollments[]
+  student_batches     student_batches[]
+  student_scripts     student_scripts[]
+  study_materials     study_materials[]
+  teacher_assignments teacher_assignments[]
+}
 
-  @@map("batches")
+model course {
+  courseid   Int      @id @default(autoincrement())
+  coursename String?  @db.VarChar(255)
+  fee        Decimal? @db.Decimal(10, 2)
+}
+
+model enrollments {
+  id          String           @id @db.Uuid
+  student_id  String           @db.Uuid
+  batch_id    String           @db.Uuid
+  status      EnrollmentStatus @default(active)
+  enrolled_at DateTime         @default(now())
+  batches     batches          @relation(fields: [batch_id], references: [id])
+  users       users            @relation(fields: [student_id], references: [id])
+
+  @@unique([student_id, batch_id])
+}
+
+model student_batches {
+  userid  String  @db.Uuid
+  batchid String  @db.Uuid
+  batches batches @relation(fields: [batchid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users   users   @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([userid, batchid])
+}
+
+model student_scripts {
+  id                                       String   @id @db.Uuid
+  student_id                               String   @db.Uuid
+  batch_id                                 String   @db.Uuid
+  exam_name                                String
+  file_type                                String   @default("application/pdf")
+  storage_url                              String
+  uploaded_at                              DateTime @default(now())
+  uploaded_by                              String   @db.Uuid
+  batches                                  batches  @relation(fields: [batch_id], references: [id])
+  users_student_scripts_student_idTousers  users    @relation("student_scripts_student_idTousers", fields: [student_id], references: [id])
+  users_student_scripts_uploaded_byTousers users    @relation("student_scripts_uploaded_byTousers", fields: [uploaded_by], references: [id])
+
+  @@index([batch_id])
+  @@index([student_id])
+  @@index([uploaded_by])
+}
+
+model study_materials {
+  id          String   @id @db.Uuid
+  batch_id    String   @db.Uuid
+  file_name   String
+  file_type   String
+  storage_url String
+  uploaded_at DateTime @default(now())
+  uploaded_by String   @db.Uuid
+  batches     batches  @relation(fields: [batch_id], references: [id])
+  users       users    @relation(fields: [uploaded_by], references: [id])
+
+  @@index([batch_id])
+  @@index([uploaded_by])
+}
+
+model teacher_assignments {
+  id          String   @id @db.Uuid
+  teacher_id  String   @db.Uuid
+  batch_id    String   @db.Uuid
+  role        String
+  assigned_at DateTime @default(now())
+  batches     batches  @relation(fields: [batch_id], references: [id])
+  users       users    @relation(fields: [teacher_id], references: [id])
+}
+
+model users {
+  id                                                 String                @id @db.Uuid
+  name                                               String
+  email                                              String                @unique
+  role                                               String
+  password_hash                                      String?
+  attendance                                         attendance[]
+  batches                                            batches[]
+  enrollments                                        enrollments[]
+  student_batches                                    student_batches[]
+  student_scripts_student_scripts_student_idTousers  student_scripts[]     @relation("student_scripts_student_idTousers")
+  student_scripts_student_scripts_uploaded_byTousers student_scripts[]     @relation("student_scripts_uploaded_byTousers")
+  study_materials                                    study_materials[]
+  teacher_assignments                                teacher_assignments[]
 }
 
 enum EnrollmentStatus {
   active
   dropped
   completed
-}
-
-model Enrollment {
-  id         String           @id @default(uuid()) @db.Uuid
-  studentId  String           @db.Uuid @map("student_id")
-  batchId    String           @db.Uuid @map("batch_id")
-  status     EnrollmentStatus @default(active)
-  enrolledAt DateTime         @default(now()) @map("enrolled_at")
-
-  student    User             @relation(fields: [studentId], references: [id])
-  batch      Batch            @relation(fields: [batchId], references: [id])
-
-  @@unique([studentId, batchId])
-  @@map("enrollments")
-}
-
-model TeacherAssignment {
-  id         String   @id @default(uuid()) @db.Uuid
-  teacherId  String   @db.Uuid @map("teacher_id")
-  batchId    String   @db.Uuid @map("batch_id")
-  role       String
-  assignedAt DateTime @default(now()) @map("assigned_at")
-
-  teacher    User     @relation(fields: [teacherId], references: [id])
-  batch      Batch    @relation(fields: [batchId], references: [id])
-
-  @@map("teacher_assignments")
-}
-
-model StudyMaterial {
-  id         String   @id @db.Uuid
-  batchId    String   @db.Uuid @map("batch_id")
-  fileName   String   @map("file_name")
-  fileType   String   @map("file_type")
-  storageUrl String   @map("storage_url")
-  uploadedAt DateTime @default(now()) @map("uploaded_at")
-  uploadedBy String   @db.Uuid @map("uploaded_by")
-
-  batch      Batch    @relation(fields: [batchId], references: [id])
-  uploader   User     @relation(fields: [uploadedBy], references: [id])
-
-  @@index([batchId])
-  @@index([uploadedBy])
-  @@map("study_materials")
-}
-
-// FR-17/FR-18: Exam Script Management
-// Each evaluated PDF is linked to exactly one student and one batch.
-// The binary blob lives in IndexedDB (proxy) / R2 (production); only metadata is stored here.
-model StudentScript {
-  id         String   @id @db.Uuid
-  studentId  String   @db.Uuid @map("student_id")
-  batchId    String   @db.Uuid @map("batch_id")
-  examName   String   @map("exam_name")
-  fileType   String   @default("application/pdf") @map("file_type")
-  storageUrl String   @map("storage_url")
-  uploadedAt DateTime @default(now()) @map("uploaded_at")
-  uploadedBy String   @db.Uuid @map("uploaded_by")
-
-  student    User     @relation("StudentScripts", fields: [studentId], references: [id])
-  batch      Batch    @relation(fields: [batchId], references: [id])
-  uploader   User     @relation("ScriptUploader", fields: [uploadedBy], references: [id])
-
-  @@index([studentId])
-  @@index([batchId])
-  @@index([uploadedBy])
-  @@map("student_scripts")
 }
