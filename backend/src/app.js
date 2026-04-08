@@ -5,6 +5,7 @@ import { createAuthRoutes } from './routes/authRoutes.js';
 import { createBatchRoutes } from './routes/batchRoutes.js';
 import { createPublicRoutes } from './routes/publicRoutes.js';
 import { createAdminRoutes } from './routes/adminRoutes.js';
+import { createAttendanceRoutes } from './routes/attendanceRoutes.js';
 
 export const prisma = new PrismaClient();
 
@@ -18,6 +19,7 @@ export const createApp = () => {
     app.use('/api', createBatchRoutes(prisma));
     app.use('/api', createPublicRoutes(prisma));
     app.use('/api', createAdminRoutes(prisma));
+    app.use('/api', createAttendanceRoutes(prisma));
 
     return app;
 };

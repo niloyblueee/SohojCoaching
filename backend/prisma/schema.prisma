@@ -4,126 +4,162 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model attendance {
-  attendanceid Int       @id @default(autoincrement())
-  userid       String?   @db.Uuid
-  classdate    DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
-  ispresent    Boolean?
-  users        users?    @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+model User {
+  id                        String              @id @default(uuid()) @db.Uuid
+  name                      String
+  email                     String              @unique
+  role                      String
+  passwordHash              String?             @map("password_hash")
+  enrollments               Enrollment[]
+  teacherAssignments        TeacherAssignment[]
+  configuredBatches         Batch[]             @relation("BatchTeacher")
+  uploadedMaterials         StudyMaterial[]
+  studentScripts            StudentScript[]     @relation("StudentScripts")
+  uploadedScripts           StudentScript[]     @relation("ScriptUploader")
+  attendanceSessionsCreated AttendanceSession[] @relation("AttendanceSessionCreator")
+  attendanceAsStudent       AttendanceRecord[]  @relation("AttendanceStudent")
+  attendanceMarked          AttendanceRecord[]  @relation("AttendanceMarker")
+
+  @@map("users")
 }
 
-model batches {
-  id                  String                @id @db.Uuid
-  name                String
-  course              String
-  batch_name          String?               @unique
-  created_at          DateTime              @default(now())
-  monthly_fee         Decimal?              @db.Decimal(10, 2)
-  schedule            String?
-  subject             String?
-  teacher_id          String?               @db.Uuid
-  batch_duration      String?
-  description         String?
-  discounted_fee      Decimal?              @db.Decimal(10, 2)
-  weekly_routine      Json?
-  users               users?                @relation(fields: [teacher_id], references: [id])
-  enrollments         enrollments[]
-  student_batches     student_batches[]
-  student_scripts     student_scripts[]
-  study_materials     study_materials[]
-  teacher_assignments teacher_assignments[]
-}
+model Batch {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String
+  course             String
+  batchName          String?             @unique @map("batch_name")
+  subject            String?
+  schedule           String?
+  monthlyFee         Decimal?            @map("monthly_fee") @db.Decimal(10, 2)
+  discountedFee      Decimal?            @map("discounted_fee") @db.Decimal(10, 2)
+  batchDuration      String?             @map("batch_duration")
+  description        String?
+  weeklyRoutine      Json?               @map("weekly_routine")
+  teacherId          String?             @map("teacher_id") @db.Uuid
+  createdAt          DateTime            @default(now()) @map("created_at")
+  teacher            User?               @relation("BatchTeacher", fields: [teacherId], references: [id])
+  enrollments        Enrollment[]
+  teacherAssignments TeacherAssignment[]
+  studyMaterials     StudyMaterial[]
+  studentScripts     StudentScript[]
+  attendanceSessions AttendanceSession[]
 
-model course {
-  courseid   Int      @id @default(autoincrement())
-  coursename String?  @db.VarChar(255)
-  fee        Decimal? @db.Decimal(10, 2)
-}
-
-model enrollments {
-  id          String           @id @db.Uuid
-  student_id  String           @db.Uuid
-  batch_id    String           @db.Uuid
-  status      EnrollmentStatus @default(active)
-  enrolled_at DateTime         @default(now())
-  batches     batches          @relation(fields: [batch_id], references: [id])
-  users       users            @relation(fields: [student_id], references: [id])
-
-  @@unique([student_id, batch_id])
-}
-
-model student_batches {
-  userid  String  @db.Uuid
-  batchid String  @db.Uuid
-  batches batches @relation(fields: [batchid], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users   users   @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([userid, batchid])
-}
-
-model student_scripts {
-  id                                       String   @id @db.Uuid
-  student_id                               String   @db.Uuid
-  batch_id                                 String   @db.Uuid
-  exam_name                                String
-  file_type                                String   @default("application/pdf")
-  storage_url                              String
-  uploaded_at                              DateTime @default(now())
-  uploaded_by                              String   @db.Uuid
-  batches                                  batches  @relation(fields: [batch_id], references: [id])
-  users_student_scripts_student_idTousers  users    @relation("student_scripts_student_idTousers", fields: [student_id], references: [id])
-  users_student_scripts_uploaded_byTousers users    @relation("student_scripts_uploaded_byTousers", fields: [uploaded_by], references: [id])
-
-  @@index([batch_id])
-  @@index([student_id])
-  @@index([uploaded_by])
-}
-
-model study_materials {
-  id          String   @id @db.Uuid
-  batch_id    String   @db.Uuid
-  file_name   String
-  file_type   String
-  storage_url String
-  uploaded_at DateTime @default(now())
-  uploaded_by String   @db.Uuid
-  batches     batches  @relation(fields: [batch_id], references: [id])
-  users       users    @relation(fields: [uploaded_by], references: [id])
-
-  @@index([batch_id])
-  @@index([uploaded_by])
-}
-
-model teacher_assignments {
-  id          String   @id @db.Uuid
-  teacher_id  String   @db.Uuid
-  batch_id    String   @db.Uuid
-  role        String
-  assigned_at DateTime @default(now())
-  batches     batches  @relation(fields: [batch_id], references: [id])
-  users       users    @relation(fields: [teacher_id], references: [id])
-}
-
-model users {
-  id                                                 String                @id @db.Uuid
-  name                                               String
-  email                                              String                @unique
-  role                                               String
-  password_hash                                      String?
-  attendance                                         attendance[]
-  batches                                            batches[]
-  enrollments                                        enrollments[]
-  student_batches                                    student_batches[]
-  student_scripts_student_scripts_student_idTousers  student_scripts[]     @relation("student_scripts_student_idTousers")
-  student_scripts_student_scripts_uploaded_byTousers student_scripts[]     @relation("student_scripts_uploaded_byTousers")
-  study_materials                                    study_materials[]
-  teacher_assignments                                teacher_assignments[]
+  @@map("batches")
 }
 
 enum EnrollmentStatus {
   active
   dropped
   completed
+}
+
+model Enrollment {
+  id         String           @id @default(uuid()) @db.Uuid
+  studentId  String           @map("student_id") @db.Uuid
+  batchId    String           @map("batch_id") @db.Uuid
+  status     EnrollmentStatus @default(active)
+  enrolledAt DateTime         @default(now()) @map("enrolled_at")
+
+  student User  @relation(fields: [studentId], references: [id])
+  batch   Batch @relation(fields: [batchId], references: [id])
+
+  @@unique([studentId, batchId])
+  @@map("enrollments")
+}
+
+model TeacherAssignment {
+  id         String   @id @default(uuid()) @db.Uuid
+  teacherId  String   @map("teacher_id") @db.Uuid
+  batchId    String   @map("batch_id") @db.Uuid
+  role       String
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  teacher User  @relation(fields: [teacherId], references: [id])
+  batch   Batch @relation(fields: [batchId], references: [id])
+
+  @@map("teacher_assignments")
+}
+
+model StudyMaterial {
+  id         String   @id @db.Uuid
+  batchId    String   @map("batch_id") @db.Uuid
+  fileName   String   @map("file_name")
+  fileType   String   @map("file_type")
+  storageUrl String   @map("storage_url")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  uploadedBy String   @map("uploaded_by") @db.Uuid
+
+  batch    Batch @relation(fields: [batchId], references: [id])
+  uploader User  @relation(fields: [uploadedBy], references: [id])
+
+  @@index([batchId])
+  @@index([uploadedBy])
+  @@map("study_materials")
+}
+
+model StudentScript {
+  id         String   @id @db.Uuid
+  studentId  String   @map("student_id") @db.Uuid
+  batchId    String   @map("batch_id") @db.Uuid
+  examName   String   @map("exam_name")
+  fileType   String   @default("application/pdf") @map("file_type")
+  storageUrl String   @map("storage_url")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  uploadedBy String   @map("uploaded_by") @db.Uuid
+
+  student  User  @relation("StudentScripts", fields: [studentId], references: [id])
+  batch    Batch @relation(fields: [batchId], references: [id])
+  uploader User  @relation("ScriptUploader", fields: [uploadedBy], references: [id])
+
+  @@index([studentId])
+  @@index([batchId])
+  @@index([uploadedBy])
+  @@map("student_scripts")
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+  excused
+}
+
+model AttendanceSession {
+  id          String             @id @default(uuid()) @db.Uuid
+  batchId     String             @map("batch_id") @db.Uuid
+  sessionDate DateTime           @map("session_date") @db.Date
+  topic       String?            @db.VarChar(255)
+  createdBy   String?            @map("created_by") @db.Uuid
+  createdAt   DateTime           @default(now()) @map("created_at")
+  batch       Batch              @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  creator     User?              @relation("AttendanceSessionCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  records     AttendanceRecord[]
+
+  @@unique([batchId, sessionDate])
+  @@index([batchId])
+  @@index([sessionDate])
+  @@map("attendance_sessions")
+}
+
+model AttendanceRecord {
+  id        String            @id @default(uuid()) @db.Uuid
+  sessionId String            @map("session_id") @db.Uuid
+  studentId String            @map("student_id") @db.Uuid
+  status    AttendanceStatus  @default(present)
+  note      String?
+  markedAt  DateTime          @default(now()) @map("marked_at")
+  markedBy  String?           @map("marked_by") @db.Uuid
+  session   AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student   User              @relation("AttendanceStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  marker    User?             @relation("AttendanceMarker", fields: [markedBy], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, studentId])
+  @@index([sessionId])
+  @@index([studentId])
+  @@index([status])
+  @@index([markedBy])
+  @@map("attendance_records")
 }

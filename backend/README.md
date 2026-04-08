@@ -48,6 +48,7 @@ If you want a direct SQL setup script, use:
 
 - [sql/setup_tables.sql](sql/setup_tables.sql)
 - [sql/20260314_fr3_batch_creation_configuration.sql](sql/20260314_fr3_batch_creation_configuration.sql)
+- [sql/20260408_fr12_attendance_analytics.sql](sql/20260408_fr12_attendance_analytics.sql)
 
 Run it from Railway SQL console, or with `psql`:
 
@@ -59,6 +60,18 @@ For FR-3 batch migration script:
 
 ```bash
 psql "$DATABASE_URL" -f sql/20260314_fr3_batch_creation_configuration.sql
+```
+
+For FR-12 attendance analytics migration script:
+
+```bash
+psql "$DATABASE_URL" -f sql/20260408_fr12_attendance_analytics.sql
+```
+
+If `psql` is unavailable on your machine, run the same migration via Node/Prisma:
+
+```bash
+npm run db:migrate:attendance
 ```
 
 ## Start Backend
@@ -113,6 +126,12 @@ Create 2 students, 2 teachers, and 2 batches for `/management` testing:
 
 ```bash
 npm run db:seed:management
+```
+
+Create attendance sessions and attendance rows for FR-12 analytics:
+
+```bash
+npm run db:seed:attendance
 ```
 
 On startup, backend checks DB connection first.

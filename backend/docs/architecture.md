@@ -17,6 +17,8 @@ This backend now follows a modular structure so auth and feature routes can scal
 - `src/routes/batchRoutes.js`: FR-3 batch CRUD endpoints.
 - `src/routes/publicRoutes.js`: read-only/shared API endpoints.
 - `src/routes/adminRoutes.js`: admin-protected mutations and management endpoints.
+- `src/routes/attendanceRoutes.js`: FR-12 role-aware attendance analytics endpoints.
+- `src/services/attendanceService.js`: FR-12 analytics query logic and aggregation.
 
 ## Auth Design
 
@@ -36,6 +38,22 @@ This backend now follows a modular structure so auth and feature routes can scal
 5. `DELETE /api/batches/:id` (admin, blocked if enrollments exist)
 
 `GET /api/batches` includes derived `student_count` from enrollments.
+
+## FR-12 Attendance Analytics API
+
+1. `GET /api/attendance/teacher/analytics` (teacher/admin)
+2. `GET /api/attendance/student/analytics` (student)
+
+Teacher analytics supports:
+
+- course-wise summaries
+- student-wise summaries
+- daily trend points
+
+Student analytics supports:
+
+- course-wise personal summaries
+- session-level timeline trend
 
 ## Why This Structure
 

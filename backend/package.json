@@ -8,7 +8,9 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:setup": "prisma generate && prisma db push",
+    "db:migrate:attendance": "node src/scripts/migrateAttendanceAnalytics.js",
     "db:seed:management": "node src/scripts/seedManagementTestData.js",
+    "db:seed:attendance": "node src/scripts/seedAttendanceAnalyticsData.js",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },

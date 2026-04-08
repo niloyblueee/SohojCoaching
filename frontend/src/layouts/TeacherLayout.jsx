@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import MaterialTeacherView from '../MaterialTeacherView';
 import ScriptUploadView from '../ScriptUploadView';
+import AttendanceTeacherAnalytics from '../AttendanceTeacherAnalytics';
 
 function TeacherLayout({ user, onLogout }) {
     return (
@@ -21,6 +22,7 @@ function TeacherLayout({ user, onLogout }) {
                 <nav className="role-nav">
                     <NavLink to="/teacher/materials">Materials</NavLink>
                     <NavLink to="/teacher/scripts">Exam Scripts</NavLink>
+                    <NavLink to="/teacher/attendance">Attendance</NavLink>
                 </nav>
 
                 <main className="role-content">
@@ -28,6 +30,7 @@ function TeacherLayout({ user, onLogout }) {
                         <Route path="/" element={<Navigate to="/teacher/materials" replace />} />
                         <Route path="/teacher/materials" element={<MaterialTeacherView />} />
                         <Route path="/teacher/scripts" element={<ScriptUploadView />} />
+                        <Route path="/teacher/attendance" element={<AttendanceTeacherAnalytics />} />
                         <Route path="*" element={<Navigate to="/teacher/materials" replace />} />
                     </Routes>
                 </main>

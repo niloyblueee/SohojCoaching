@@ -9,12 +9,15 @@ The frontend auth and API access flow is split into reusable layers for maintain
 - `src/layouts/TeacherLayout.jsx`: authenticated teacher navigation + routes.
 - `src/layouts/StudentLayout.jsx`: authenticated student navigation + routes.
 - `src/BatchManagementPage.jsx`: FR-3 admin batch creation/configuration screen.
+- `src/AttendanceTeacherAnalytics.jsx`: FR-12 teacher attendance analytics screen.
+- `src/AttendanceStudentAnalytics.jsx`: FR-12 student attendance analytics screen.
 - `src/components/batches/*`: FR-3 batch UI primitives.
 - `src/Login.jsx`: role-based login/signup UI + submit handling.
 - `src/hooks/useAuthSession.js`: restore session, login complete, logout.
 - `src/config/appConfig.js`: base URLs + storage keys.
 - `src/services/authApi.js`: auth-focused API calls.
 - `src/services/batchApi.js`: FR-3 batch CRUD API calls.
+- `src/services/attendanceApi.js`: FR-12 attendance analytics API calls.
 - `src/services/httpClient.js`: centralized fetch wrapper.
 - `src/services/authStorage.js`: localStorage session helpers.
 
