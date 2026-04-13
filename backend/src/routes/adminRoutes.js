@@ -288,5 +288,48 @@ export const createAdminRoutes = (prisma) => {
         }
     });
 
+    // --- Add these inside createAdminRoutes(prisma) ---
+
+    // GET /api/studentProfile
+    adminRoutes.get('/studentProfile', requireAdmin, async (req, res) => {
+        try {
+            const students = await prisma.$queryRaw`SELECT * FROM users WHERE LOWER(role) = 'student' ORDER BY name ASC`;
+            res.json(students);
+        } catch (err) {
+            res.status(500).json({ error: 'Internal server error', details: err.message });
+        }
+    });
+
+    // PUT /api/studentProfile/:id
+    adminRoutes.put('/studentProfile/:id', requireAdmin, async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { name, email } = req.body;
+            await prisma.$executeRaw`
+                UPDATE users 
+                SET name = ${name}, email = ${email} 
+                WHERE id = ${id}::uuid AND LOWER(role) = 'student'
+            `;
+            res.json({ message: "Profile updated successfully!" });
+        } catch (err) {
+            res.status(500).json({ error: 'Internal server error', details: err.message });
+        }
+    });
+
+    // PUT /api/studentProfile/:id/status
+    adminRoutes.put('/studentProfile/:id/status', requireAdmin, async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+            await prisma.$executeRaw`
+                UPDATE users 
+                SET status = ${status} 
+                WHERE id = ${id}::uuid AND LOWER(role) = 'student'
+            `;
+            res.json({ message: "Status updated successfully!" });
+        } catch (err) {
+            res.status(500).json({ error: 'Internal server error', details: err.message });
+        }
+    });
     return adminRoutes;
 };
