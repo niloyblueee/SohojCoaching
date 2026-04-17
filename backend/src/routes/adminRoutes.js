@@ -158,6 +158,83 @@ export const createAdminRoutes = (prisma) => {
         }
     });
 
+    // GET /api/batch-overview
+    adminRoutes.get('/batch-overview', requireAdmin, async (_req, res) => {
+        try {
+            const rows = await prisma.$queryRaw`
+                SELECT
+                    b.id,
+                    COALESCE(NULLIF(b.batch_name, ''), b.name) AS batch_name,
+                    COALESCE(NULLIF(b.subject, ''), b.course) AS course,
+                    (
+                        SELECT COUNT(*)::int
+                        FROM enrollments e
+                        WHERE e.batch_id = b.id
+                          AND LOWER(e.status::text) = 'active'
+                    ) AS total_students,
+                    (
+                        SELECT COUNT(ar.id)::int
+                        FROM attendance_records ar
+                        JOIN attendance_sessions s ON s.id = ar.session_id
+                        WHERE s.batch_id = b.id
+                    ) AS total_marks,
+                    (
+                        SELECT COALESCE(SUM(CASE WHEN ar.status::text IN ('present', 'late') THEN 1 ELSE 0 END), 0)::int
+                        FROM attendance_records ar
+                        JOIN attendance_sessions s ON s.id = ar.session_id
+                        WHERE s.batch_id = b.id
+                    ) AS attended_marks
+                FROM batches b
+                ORDER BY batch_name ASC
+            `;
+
+            const normalized = rows.map((row) => {
+                const totalMarks = Number(row.total_marks || 0);
+                const attendedMarks = Number(row.attended_marks || 0);
+                const attendanceRate = totalMarks > 0 ? Number(((attendedMarks / totalMarks) * 100).toFixed(2)) : 0;
+
+                return {
+                    id: row.id,
+                    batch_name: row.batch_name,
+                    course: row.course,
+                    total_students: Number(row.total_students || 0),
+                    attendance_rate: attendanceRate,
+                    fee_status: 'Pending Integration',
+                    total_marks: totalMarks,
+                    attended_marks: attendedMarks
+                };
+            });
+
+            const summary = normalized.reduce(
+                (acc, batch) => {
+                    acc.total_batches += 1;
+                    acc.total_students += batch.total_students;
+                    acc.total_marks += batch.total_marks;
+                    acc.attended_marks += batch.attended_marks;
+                    return acc;
+                },
+                { total_batches: 0, total_students: 0, total_marks: 0, attended_marks: 0 }
+            );
+
+            const overall_attendance_rate =
+                summary.total_marks > 0
+                    ? Number(((summary.attended_marks / summary.total_marks) * 100).toFixed(2))
+                    : 0;
+
+            return res.json({
+                generated_at: new Date().toISOString(),
+                summary: {
+                    total_batches: summary.total_batches,
+                    total_students: summary.total_students,
+                    overall_attendance_rate
+                },
+                batches: normalized
+            });
+        } catch (error) {
+            return res.status(500).json({ error: 'Internal server error', details: error.message });
+        }
+    });
+
     // GET /api/batches/:batchId/members
     adminRoutes.get('/batches/:batchId/members', requireAnyRole(['admin', 'teacher']), async (req, res) => {
         const { batchId } = req.params;

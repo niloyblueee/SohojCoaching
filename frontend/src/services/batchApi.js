@@ -33,3 +33,5 @@ export const deleteBatch = (id) =>
     });
 
 export const getTeachers = () => apiFetch('/teachers', { withAuth: true });
+
+export const getBatchOverview = () => apiFetch('/batch-overview', { withAuth: true });

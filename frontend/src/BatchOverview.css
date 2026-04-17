@@ -1,0 +1,135 @@
+.batch-overview-page {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 0.5rem;
+  color: #1f2a44;
+  font-family: 'Nunito', sans-serif;
+}
+
+.batch-overview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.batch-overview-kicker {
+  margin: 0;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #4965a8;
+  font-weight: 700;
+}
+
+.batch-overview-header h2 {
+  margin: 0.2rem 0 0.4rem;
+  color: #203a73;
+  font-family: 'Chakra Petch', sans-serif;
+}
+
+.batch-overview-sub {
+  margin: 0;
+  color: #3c527f;
+  max-width: 60ch;
+}
+
+.batch-overview-refresh {
+  border: 0;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0.45rem 0.95rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: #f7f9ff;
+  background: linear-gradient(120deg, #2d3b7f, #3a79c1);
+  cursor: pointer;
+}
+
+.batch-overview-refresh:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.batch-overview-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(170px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.batch-overview-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #c7d7f5;
+  border-radius: 12px;
+  padding: 0.85rem;
+}
+
+.batch-overview-card p {
+  margin: 0;
+  color: #4f6396;
+  font-size: 0.88rem;
+}
+
+.batch-overview-card strong {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-size: 1.45rem;
+  color: #1d3d83;
+}
+
+.batch-overview-table-wrap {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #c7d7f5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.batch-overview-status {
+  margin: 0;
+  padding: 0.85rem;
+  color: #3f5689;
+}
+
+.batch-overview-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.batch-overview-table th,
+.batch-overview-table td {
+  text-align: left;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid #d5e0f8;
+  font-size: 0.92rem;
+}
+
+.batch-overview-table th {
+  background: #ecf2ff;
+  color: #2b4f97;
+  font-weight: 700;
+}
+
+.batch-overview-table td {
+  color: #27395f;
+}
+
+.batch-overview-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 860px) {
+  .batch-overview-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .batch-overview-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-overview-table-wrap {
+    overflow-x: auto;
+  }
+}
