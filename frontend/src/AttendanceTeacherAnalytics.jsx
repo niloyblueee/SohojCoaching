@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getTeacherAttendanceAnalytics } from './services/attendanceApi';
+import { getTeacherAttendanceAnalytics, getSessionAttendance, saveSessionAttendance } from './services/attendanceApi';
 import './AttendanceAnalytics.css';
 
 const LOOKBACK_OPTIONS = [14, 30, 60, 90, 180];
@@ -89,6 +89,13 @@ function AttendanceTeacherAnalytics() {
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [refreshTick, setRefreshTick] = useState(0);
+    const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
+    const [sessionRecords, setSessionRecords] = useState([]);
+    const [originalRecords, setOriginalRecords] = useState([]);
+    const [hasChanges, setHasChanges] = useState(false);
+    const [loadingSession, setLoadingSession] = useState(false);
+    const [saveMessage, setSaveMessage] = useState('');
 
     useEffect(() => {
         const run = async () => {
@@ -112,7 +119,7 @@ function AttendanceTeacherAnalytics() {
         };
 
         run();
-    }, [batchId, studentId, days]);
+    }, [batchId, studentId, days, refreshTick]);
 
     useEffect(() => {
         if (!analytics) return;
@@ -128,6 +135,60 @@ function AttendanceTeacherAnalytics() {
             setStudentId('');
         }
     }, [analytics, batchId, studentId]);
+
+        useEffect(() => {
+        const fetchSession = async () => {
+            if (!batchId) {
+                setSessionRecords([]);
+                setOriginalRecords([]);
+                setHasChanges(false);
+                return;
+            }
+            setLoadingSession(true);
+            setSaveMessage('');
+            try {
+                const data = await getSessionAttendance(batchId, attendanceDate);
+                setSessionRecords(data);
+                setOriginalRecords(JSON.parse(JSON.stringify(data)));
+                setHasChanges(false);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoadingSession(false);
+            }
+        };
+        fetchSession();
+    }, [batchId, attendanceDate]);
+
+    const handleToggleStatus = (studentId, newStatus) => {
+        setSessionRecords(prev => 
+            prev.map(rec => rec.student_id === studentId ? { ...rec, status: newStatus } : rec)
+        );
+        setHasChanges(true);
+        setSaveMessage('');
+    };
+
+    const handleCancelChanges = () => {
+        setSessionRecords(JSON.parse(JSON.stringify(originalRecords)));
+        setHasChanges(false);
+        setSaveMessage('');
+    };
+
+    const handleSaveSession = async () => {
+        try {
+            setSaveMessage('Saving...');
+            await saveSessionAttendance(batchId, attendanceDate, sessionRecords);
+            setOriginalRecords(JSON.parse(JSON.stringify(sessionRecords)));
+            setHasChanges(false);
+            setSaveMessage('Saved successfully!');
+            setRefreshTick(prev => prev + 1);
+            setTimeout(() => setSaveMessage(''), 3000);
+        } catch (err) {
+            const errorMsg = err.response?.data?.error || err.message || "Unknown error";
+            setSaveMessage(`Failed to save: ${errorMsg}`);
+            console.error("Frontend Save Error:", err);
+        }
+    };
 
     const summary = analytics?.summary || {
         attendance_rate: 0,
@@ -161,7 +222,7 @@ function AttendanceTeacherAnalytics() {
     return (
         <section className="attendance-shell attendance-shell-teacher">
             <header className="attendance-header">
-                <h2>Attendance Analytics</h2>
+                <h2>Attendance Taker & Analytics</h2>
                 <p>
                     Course-wise and student-wise attendance health across your assigned classes.
                 </p>
@@ -207,9 +268,105 @@ function AttendanceTeacherAnalytics() {
             {loading && <p className="attendance-status">Loading attendance analytics...</p>}
             {!loading && error && <p className="attendance-status attendance-status-error">{error}</p>}
 
+            <article className="attendance-panel" style={{ marginBottom: '16px' }}>
+                <h3>Mark / Edit Daily Attendance</h3>
+                {!batchId ? (
+                    <p className="attendance-empty">Please select a specific Batch from the top dropdown to mark attendance.</p>
+                ) : (
+                    <div className="attendance-marking-section">
+                        <div className="attendance-field" style={{ maxWidth: '200px', marginBottom: '15px' }}>
+                            <label>Select Date to View or Edit</label>
+                            <input
+                                type="date"
+                                value={attendanceDate}
+                                onChange={(e) => setAttendanceDate(e.target.value)}
+                                max={new Date().toISOString().split('T')[0]}
+                            />
+                        </div>
+
+                        {loadingSession ? (
+                            <p className="attendance-status">Loading student list...</p>
+                        ) : sessionRecords.length === 0 ? (
+                            <p className="attendance-empty">No active students found in this batch.</p>
+                        ) : (
+                            <div className="attendance-table-wrap">
+                                <table className="attendance-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sessionRecords.filter(record => !studentId || record.student_id === studentId).map(record => (
+                                        <tr key={record.student_id}>
+                                            <td>{record.student_name}</td>
+                                            <td>
+                                                <div style={{ display: 'flex', gap: '0' }}>
+                                                    <button
+                                                    type="button"
+                                                    style={{
+                                                        padding: '6px 14px', cursor: 'pointer', border: '1px solid #289f6c',
+                                                        background: record.status === 'present' ? '#289f6c' : 'transparent',
+                                                        color: record.status === 'present' ? '#fff' : '#289f6c',
+                                                        borderTopLeftRadius: '6px', borderBottomLeftRadius: '6px',
+                                                        borderTopRightRadius: '0', borderBottomRightRadius: '0'
+                                                    }}
+                                                    onClick={() => handleToggleStatus(record.student_id, 'present')}
+                                                    >
+                                                        Present
+                                                    </button>
+                                                    <button
+                                                    type="button"
+                                                    style={{
+                                                        padding: '6px 14px', cursor: 'pointer', border: '1px solid #b93f54', borderLeft: 'none',
+                                                        background: record.status === 'absent' ? '#b93f54' : 'transparent',
+                                                        color: record.status === 'absent' ? '#fff' : '#b93f54',
+                                                        borderTopRightRadius: '6px', borderBottomRightRadius: '6px',
+                                                        borderTopLeftRadius: '0', borderBottomLeftRadius: '0'
+                                                    }}
+                                                    onClick={() => handleToggleStatus(record.student_id, 'absent')}
+                                                    >
+                                                        Absent
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '18px' }}>
+                                    <button 
+                                        type="button" 
+                                        onClick={handleSaveSession} 
+                                        disabled={!hasChanges}
+                                        style={{ background: hasChanges ? '#4463ff' : '#3a4965', opacity: hasChanges ? 1 : 0.6 }}
+                                    >
+                                        Save Attendance
+                                    </button>
+                                    
+                                    {hasChanges && (
+                                        <button 
+                                            type="button" 
+                                            onClick={handleCancelChanges}
+                                            style={{ background: 'transparent', border: '1px solid #7a93c0', color: '#cfdbf5' }}
+                                        >
+                                            Cancel Changes
+                                        </button>
+                                    )}
+
+                                    {saveMessage && <span className="attendance-highlight" style={{ margin: 0 }}>{saveMessage}</span>}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </article>
+
             <div className="attendance-stat-grid">
                 <StatCard label="Overall Attendance" value={toPercent(summary.attendance_rate)} accent="primary" />
-                <StatCard label="Present/Late Marks" value={String(summary.attended_count)} accent="success" />
+                <StatCard label="Present Marks" value={String(summary.attended_count)} accent="success" />
                 <StatCard label="Absent Marks" value={String(summary.absent_count)} accent="danger" />
                 <StatCard label="Class Sessions" value={String(summary.total_sessions)} accent="neutral" />
             </div>
@@ -253,7 +410,7 @@ function AttendanceTeacherAnalytics() {
                     <RateTrendChart points={trend} />
                 </article>
             </div>
-
+            
             <article className="attendance-panel">
                 <h3>Student-wise Breakdown</h3>
 
@@ -266,9 +423,8 @@ function AttendanceTeacherAnalytics() {
                                 <tr>
                                     <th>Student</th>
                                     <th>Attendance Rate</th>
-                                    <th>Present/Late</th>
+                                    <th>Present</th>
                                     <th>Absent</th>
-                                    <th>Late</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -278,7 +434,6 @@ function AttendanceTeacherAnalytics() {
                                         <td>{toPercent(student.attendance_rate)}</td>
                                         <td>{student.attended_count}</td>
                                         <td>{student.absent_count}</td>
-                                        <td>{student.late_count}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -6,12 +6,16 @@
 }
 
 .materials-page h2 {
+  color: #000000;
   margin-bottom: 6px;
 }
 
 .materials-disclaimer {
-  margin: 0 0 18px;
-  color: #9fb0ca;
+  color: #9fb0ca; 
+}
+
+.materials-panel h3 {
+  color: #e7ecf3;
 }
 
 .materials-panel {
