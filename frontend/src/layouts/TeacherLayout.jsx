@@ -28,8 +28,8 @@ function TeacherLayout({ user, onLogout }) {
                 <main className="role-content">
                     <Routes>
                         <Route path="/" element={<Navigate to="/teacher/materials" replace />} />
-                        <Route path="/teacher/materials" element={<MaterialTeacherView />} />
-                        <Route path="/teacher/scripts" element={<ScriptUploadView />} />
+                        <Route path="/teacher/materials" element={<MaterialTeacherView currentUser={user} />} />
+                        <Route path="/teacher/scripts" element={<ScriptUploadView currentUser={user} />} />
                         <Route path="/teacher/attendance" element={<AttendanceTeacherAnalytics />} />
                         <Route path="*" element={<Navigate to="/teacher/materials" replace />} />
                     </Routes>

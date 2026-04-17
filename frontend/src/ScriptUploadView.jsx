@@ -4,12 +4,10 @@ import './ExamScripts.css';
 import { apiFetch } from './services/httpClient';
 
 
-function ScriptUploadView() {
+function ScriptUploadView({ currentUser }) {
   const [batches, setBatches] = useState([]);
-  const [teachers, setTeachers] = useState([]);
   const [batchStudents, setBatchStudents] = useState([]); // students enrolled in selected batch
   const [selectedBatch, setSelectedBatch] = useState('');
-  const [selectedTeacher, setSelectedTeacher] = useState('');
   const [selectedStudent, setSelectedStudent] = useState('');
   const [studentSearch, setStudentSearch] = useState('');
   const [examName, setExamName] = useState('');
@@ -22,17 +20,22 @@ function ScriptUploadView() {
 
   const fileInputRef = useRef(null);
 
+  const normalizeBatchStudents = (students = []) => {
+    return students
+      .map((student) => {
+        const id = student.studentId || student.student_id || student.id || '';
+        const name = String(student.name || '').trim();
+        return { id: String(id), name };
+      })
+      .filter((student) => student.id && student.name);
+  };
+
   // ── Initial load ──────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
-        const [batchData, teacherData] = await Promise.all([
-          apiFetch('/batches', { withAuth: true }),
-          apiFetch('/teachers', { withAuth: true })
-        ]);
+        const batchData = await apiFetch('/batches', { withAuth: true });
         setBatches(batchData);
-        setTeachers(teacherData);
-        if (teacherData.length > 0) setSelectedTeacher((prev) => prev || teacherData[0].id);
       } catch (err) {
         setStatus(err.message);
       }
@@ -51,8 +54,11 @@ function ScriptUploadView() {
     const load = async () => {
       try {
         const members = await apiFetch(`/batches/${selectedBatch}/members`, { withAuth: true });
-        setBatchStudents(members.students || []);
-        setSelectedStudent('');
+        const normalizedStudents = normalizeBatchStudents(members?.students || []);
+        setBatchStudents(normalizedStudents);
+        setSelectedStudent((current) =>
+          normalizedStudents.some((student) => student.id === current) ? current : ''
+        );
         setStudentSearch('');
       } catch (err) {
         setStatus(err.message);
@@ -106,8 +112,13 @@ function ScriptUploadView() {
     e.preventDefault();
     setStatus('');
 
-    if (!selectedBatch || !selectedTeacher || !selectedStudent || !examName.trim() || !file) {
+    if (!selectedBatch || !selectedStudent || !examName.trim() || !file) {
       setStatus('All fields are required. Make sure a PDF is selected.');
+      return;
+    }
+
+    if (!currentUser?.id) {
+      setStatus('Unable to determine the signed-in teacher. Please log in again.');
       return;
     }
 
@@ -122,7 +133,7 @@ function ScriptUploadView() {
           student_id: selectedStudent,
           batch_id: selectedBatch,
           exam_name: examName.trim(),
-          uploaded_by: selectedTeacher
+          uploaded_by: currentUser.id
         },
         withAuth: true
       });
@@ -166,8 +177,8 @@ function ScriptUploadView() {
   };
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const filteredStudents = batchStudents.filter((s) =>
-    s.name.toLowerCase().includes(studentSearch.toLowerCase())
+  const filteredStudents = batchStudents.filter((student) =>
+    student.name.toLowerCase().includes(studentSearch.toLowerCase())
   );
 
   const selectedBatchName = batches.find((b) => b.id === selectedBatch)?.name || '';
@@ -194,15 +205,6 @@ function ScriptUploadView() {
               </select>
             </div>
 
-            <div className="field-block">
-              <label>Uploaded By (Teacher)</label>
-              <select value={selectedTeacher} onChange={(e) => setSelectedTeacher(e.target.value)}>
-                <option value="">-- Select Teacher --</option>
-                {teachers.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-            </div>
           </div>
 
           {/* Student selector with live search */}
@@ -224,8 +226,8 @@ function ScriptUploadView() {
                   onChange={(e) => setSelectedStudent(e.target.value)}
                 >
                   <option value="">-- Select Student --</option>
-                  {filteredStudents.map((s) => (
-                    <option key={s.studentId} value={s.studentId}>{s.name}</option>
+                  {filteredStudents.map((student) => (
+                    <option key={student.id} value={student.id}>{student.name}</option>
                   ))}
                 </select>
                 {filteredStudents.length === 0 && batchStudents.length > 0 && (

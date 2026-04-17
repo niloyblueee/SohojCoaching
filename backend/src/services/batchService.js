@@ -61,11 +61,25 @@ const assertTeacher = async (prisma, teacherId) => {
 
 const parseSortOrder = (value) => (String(value || '').toLowerCase() === 'asc' ? 'asc' : 'desc');
 
-export const getBatches = async (prisma, { search = '', sortBy = 'created_at', sortOrder = 'desc' } = {}) => {
+const getRoleScopedBatchWhere = (auth) => {
+    const role = String(auth?.role || '').toLowerCase();
+    const userId = String(auth?.sub || '').trim();
+
+    if (role !== 'teacher' || !userId) return undefined;
+
+    return {
+        OR: [
+            { teacherId: userId },
+            { teacherAssignments: { some: { teacherId: userId } } }
+        ]
+    };
+};
+
+export const getBatches = async (prisma, { search = '', sortBy = 'created_at', sortOrder = 'desc', auth } = {}) => {
     const safeSortOrder = parseSortOrder(sortOrder);
     const q = normalizeText(search);
-
-    const where = q
+    const scopedWhere = getRoleScopedBatchWhere(auth);
+    const searchWhere = q
         ? {
             OR: [
                 { batchName: { contains: q, mode: 'insensitive' } },
@@ -73,6 +87,9 @@ export const getBatches = async (prisma, { search = '', sortBy = 'created_at', s
             ]
         }
         : undefined;
+
+    const whereClauses = [scopedWhere, searchWhere].filter(Boolean);
+    const where = whereClauses.length === 0 ? undefined : whereClauses.length === 1 ? whereClauses[0] : { AND: whereClauses };
 
     let orderBy;
     if (sortBy === 'student_count') {
@@ -101,9 +118,12 @@ export const getBatches = async (prisma, { search = '', sortBy = 'created_at', s
     return batches.map(normalizeBatchRecord);
 };
 
-export const getBatchById = async (prisma, id) => {
-    const batch = await prisma.batch.findUnique({
-        where: { id },
+export const getBatchById = async (prisma, id, { auth } = {}) => {
+    const scopedWhere = getRoleScopedBatchWhere(auth);
+    const where = scopedWhere ? { AND: [{ id }, scopedWhere] } : { id };
+
+    const batch = await prisma.batch.findFirst({
+        where,
         include: {
             teacher: {
                 select: { id: true, name: true }

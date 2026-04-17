@@ -29,7 +29,8 @@ export const listBatchesController = (prisma) => async (req, res) => {
         const data = await getBatches(prisma, {
             search: req.query.search,
             sortBy: req.query.sortBy,
-            sortOrder: req.query.sortOrder
+            sortOrder: req.query.sortOrder,
+            auth: req.auth
         });
         res.json(data);
     } catch (error) {
@@ -44,7 +45,7 @@ export const getBatchByIdController = (prisma) => async (req, res) => {
     }
 
     try {
-        const batch = await getBatchById(prisma, id);
+        const batch = await getBatchById(prisma, id, { auth: req.auth });
         if (!batch) return res.status(404).json({ error: 'Batch not found.' });
         res.json(batch);
     } catch (error) {

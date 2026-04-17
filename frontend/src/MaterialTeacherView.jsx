@@ -5,11 +5,9 @@ import { apiFetch } from './services/httpClient';
 
 const ACCEPT_TYPES = '.pdf,.doc,.docx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
-function MaterialTeacherView() {
+function MaterialTeacherView({ currentUser }) {
   const [batches, setBatches] = useState([]);
-  const [teachers, setTeachers] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState('');
-  const [selectedTeacher, setSelectedTeacher] = useState('');
   const [file, setFile] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [status, setStatus] = useState('');
@@ -18,13 +16,8 @@ function MaterialTeacherView() {
   const loadInitialData = async () => {
     setStatus('');
     try {
-      const [batchData, teacherData] = await Promise.all([
-        apiFetch('/batches', { withAuth: true }),
-        apiFetch('/teachers', { withAuth: true })
-      ]);
+      const batchData = await apiFetch('/batches', { withAuth: true });
       setBatches(batchData);
-      setTeachers(teacherData);
-      if (teacherData.length > 0) setSelectedTeacher((prev) => prev || teacherData[0].id);
     } catch (error) {
       setStatus(error.message);
     }
@@ -55,8 +48,13 @@ function MaterialTeacherView() {
   const onUpload = async (event) => {
     event.preventDefault();
 
-    if (!selectedBatch || !selectedTeacher || !file) {
-      setStatus('Choose batch, teacher, and file first.');
+    if (!selectedBatch || !file) {
+      setStatus('Choose batch and file first.');
+      return;
+    }
+
+    if (!currentUser?.id) {
+      setStatus('Unable to determine the signed-in teacher. Please log in again.');
       return;
     }
 
@@ -70,7 +68,7 @@ function MaterialTeacherView() {
           batch_id: selectedBatch,
           file_name: file.name,
           file_type: file.type || 'application/octet-stream',
-          uploaded_by: selectedTeacher
+          uploaded_by: currentUser.id
         },
         withAuth: true
       });
@@ -122,17 +120,6 @@ function MaterialTeacherView() {
             </select>
           </div>
 
-          <div className="field-block">
-            <label>Uploaded By (Teacher)</label>
-            <select value={selectedTeacher} onChange={(e) => setSelectedTeacher(e.target.value)}>
-              <option value="">-- Select Teacher --</option>
-              {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.name}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         <form onSubmit={onUpload} className="upload-zone">
