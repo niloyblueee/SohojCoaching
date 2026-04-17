@@ -5,12 +5,13 @@
   max-width: 1100px;
   margin: 24px auto;
   padding: 0 20px 32px;
-  color: #000000;
+  color: #e7ecf3;
 }
 
 .scripts-page h2 {
   margin-bottom: 6px;
   font-size: 1.6rem;
+  color: #e7ecf3;
 }
 
 .scripts-disclaimer {
@@ -243,6 +244,10 @@
   padding: 10px 12px;
   border-bottom: 1px solid #2d3a53;
   font-size: 0.91rem;
+}
+
+.scripts-table td {
+  color: #e7ecf3;
 }
 
 .scripts-table th {

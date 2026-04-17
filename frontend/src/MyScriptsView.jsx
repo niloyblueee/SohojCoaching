@@ -14,38 +14,28 @@ import { apiFetch } from './services/httpClient';
 // The UX deliberately provides no way to view or guess another student's route.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function MyScriptsView() {
-  const [students, setStudents] = useState([]);
-  const [loggedInStudent, setLoggedInStudent] = useState(''); // simulates session
+function MyScriptsView({ currentUser }) {
   const [scripts, setScripts] = useState([]);
   const [status, setStatus] = useState('');
   const [loadingScripts, setLoadingScripts] = useState(false);
-
-  // Load student list (simulates "who is logged in?" for demo purposes)
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await apiFetch('/students');
-        setStudents(data);
-        if (data.length > 0) setLoggedInStudent((prev) => prev || data[0].id);
-      } catch (err) {
-        setStatus(err.message);
-      }
-    };
-    load();
-  }, []);
+  const loggedInStudentId = currentUser?.id || '';
 
   // FR-18: fetch only this student's scripts by passing their own UUID.
   // The backend enforces that the queried UUID belongs to a student role,
   // and returns exclusively records where student_id = provided UUID.
   useEffect(() => {
     const load = async () => {
-      if (!loggedInStudent) { setScripts([]); return; }
+      if (!loggedInStudentId) {
+        setScripts([]);
+        setStatus('Unable to determine logged-in student. Please log in again.');
+        return;
+      }
       setLoadingScripts(true);
       setStatus('');
       try {
         const data = await apiFetch(
-          `/student-scripts?student_id=${encodeURIComponent(loggedInStudent)}`
+          `/student-scripts?student_id=${encodeURIComponent(loggedInStudentId)}`,
+          { withAuth: true }
         );
         setScripts(data);
       } catch (err) {
@@ -56,7 +46,7 @@ function MyScriptsView() {
       }
     };
     load();
-  }, [loggedInStudent]);
+  }, [loggedInStudentId]);
 
   // ── View PDF in a new browser tab ─────────────────────────────────────────
   const onView = async (script) => {
@@ -103,7 +93,7 @@ function MyScriptsView() {
     }
   };
 
-  const currentStudentName = students.find((s) => s.id === loggedInStudent)?.name || '';
+  const currentStudentName = currentUser?.name || '';
 
   return (
     <div className="scripts-page">
@@ -113,21 +103,10 @@ function MyScriptsView() {
         Production will utilize Google/Cloudflare R2 for file hosting.
       </p>
 
-      {/* ── Identity selector (replaces real login for demo) ── */}
       <div className="scripts-panel">
         <div className="field-block">
           <label>Logged-in Student</label>
-          <select
-            value={loggedInStudent}
-            onChange={(e) => setLoggedInStudent(e.target.value)}
-          >
-            <option value="">-- Select your identity --</option>
-            {students.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
-          {/* FR-18: No way to enter an arbitrary UUID — the UI only allows
-              the logged-in student to see their own data. */}
+          <input type="text" value={currentStudentName || 'Student'} readOnly />
           <span className="hint-text security-note">
             &#128274; You can only view scripts assigned to your own account.
           </span>

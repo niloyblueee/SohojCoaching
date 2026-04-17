@@ -3,39 +3,26 @@ import { getMaterialBlob } from './services/indexedDbMaterialProxy';
 import './StudyMaterials.css';
 import { apiFetch } from './services/httpClient';
 
-function MaterialStudentView() {
-  const [students, setStudents] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState('');
+function MaterialStudentView({ currentUser }) {
   const [enrolledBatches, setEnrolledBatches] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState('');
   const [materials, setMaterials] = useState([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
-
-  useEffect(() => {
-    const loadStudents = async () => {
-      try {
-        const data = await apiFetch('/students');
-        setStudents(data);
-        if (data.length > 0) setSelectedStudent((prev) => prev || data[0].id);
-      } catch (error) {
-        setStatus(error.message);
-      }
-    };
-
-    loadStudents();
-  }, []);
+  const loggedInStudentId = currentUser?.id || '';
 
   useEffect(() => {
     const loadStudentBatches = async () => {
-      if (!selectedStudent) {
+      if (!loggedInStudentId) {
         setEnrolledBatches([]);
         setSelectedBatch('');
+        setStatus('Unable to determine logged-in student. Please log in again.');
         return;
       }
 
       try {
-        const batches = await apiFetch(`/students/${selectedStudent}/batches`);
+        setStatus('');
+        const batches = await apiFetch(`/students/${loggedInStudentId}/batches`, { withAuth: true });
         setEnrolledBatches(batches);
         setSelectedBatch((prev) => (batches.some((b) => b.id === prev) ? prev : batches[0]?.id || ''));
       } catch (error) {
@@ -44,18 +31,19 @@ function MaterialStudentView() {
     };
 
     loadStudentBatches();
-  }, [selectedStudent]);
+  }, [loggedInStudentId]);
 
   useEffect(() => {
     const loadMaterials = async () => {
-      if (!selectedStudent || !selectedBatch) {
+      if (!loggedInStudentId || !selectedBatch) {
         setMaterials([]);
         return;
       }
 
       try {
         const data = await apiFetch(
-          `/students/${encodeURIComponent(selectedStudent)}/materials?batch_id=${encodeURIComponent(selectedBatch)}&search=${encodeURIComponent(search)}`
+          `/students/${encodeURIComponent(loggedInStudentId)}/materials?batch_id=${encodeURIComponent(selectedBatch)}&search=${encodeURIComponent(search)}`,
+          { withAuth: true }
         );
         setMaterials(data);
       } catch (error) {
@@ -64,7 +52,7 @@ function MaterialStudentView() {
     };
 
     loadMaterials();
-  }, [selectedBatch, selectedStudent, search]);
+  }, [selectedBatch, loggedInStudentId, search]);
 
   const filteredMaterials = useMemo(() => materials, [materials]);
 
@@ -100,19 +88,12 @@ function MaterialStudentView() {
       <div className="materials-panel">
         <div className="materials-grid">
           <div className="field-block">
-            <label>Select Student</label>
-            <select value={selectedStudent} onChange={(e) => setSelectedStudent(e.target.value)}>
-              <option value="">-- Select Student --</option>
-              {students.map((student) => (
-                <option key={student.id} value={student.id}>
-                  {student.name}
-                </option>
-              ))}
-            </select>
+            <label>Logged-in Student</label>
+            <input type="text" value={currentUser?.name || 'Student'} readOnly />
           </div>
 
           <div className="field-block">
-            <label>Enrolled Batches</label>
+            <label>My Batches</label>
             <select value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)}>
               <option value="">-- Select Batch --</option>
               {enrolledBatches.map((batch) => (
