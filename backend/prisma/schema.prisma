@@ -163,3 +163,19 @@ model AttendanceRecord {
   @@index([markedBy])
   @@map("attendance_records")
 }
+
+model FeePayment {
+  id               String     @id @default(uuid()) @db.Uuid
+  enrollmentId     String     @map("enrollment_id") @db.Uuid
+  monthNumber      Int        @map("month_number")
+  paymentMethod    String?    @db.VarChar(50)  @map("payment_method")
+  transactionInfo  String?    @db.VarChar(255) @map("transaction_info")
+  paymentDate      DateTime   @default(now())  @map("payment_date")
+  recordedBy       String?    @map("recorded_by") @db.Uuid
+  amountPaid       Int        @map("amount_paid")
+
+  @@unique([enrollmentId, monthNumber])
+  @@index([paymentDate])
+  @@index([enrollmentId])
+  @@map("fee_payments")
+}

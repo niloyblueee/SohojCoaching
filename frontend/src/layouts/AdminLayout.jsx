@@ -5,6 +5,7 @@ import ManagementDashboard from '../ManagementDashboard';
 import MaterialTeacherView from '../MaterialTeacherView';
 import ScriptUploadView from '../ScriptUploadView';
 import StudentList from '../components/admin/StudentList';
+import FeeManagement from '../components/admin/FeeManagement';
 
 function AdminLayout({ user, onLogout }) {
     return (
@@ -29,6 +30,7 @@ function AdminLayout({ user, onLogout }) {
                     <NavLink to="/admin/batch-overview">Batch Overview</NavLink>
                     <NavLink to="/admin/materials">Materials</NavLink>
                     <NavLink to="/admin/scripts">Exam Scripts</NavLink>
+                    <NavLink to="/admin/fees">Fee Management</NavLink>
                 </nav>
 
                 <main className="admin-content">
@@ -40,7 +42,7 @@ function AdminLayout({ user, onLogout }) {
                         <Route path="/admin/batch-overview" element={<BatchOverviewPage />} />
                         <Route path="/admin/materials" element={<MaterialTeacherView />} />
                         <Route path="/admin/scripts" element={<ScriptUploadView />} />
-                        <Route path="*" element={<Navigate to="/admin/batches" replace />} />
+                        <Route path="/admin/fees" element={<FeeManagement />} />
                     </Routes>
                 </main>
             </div>
