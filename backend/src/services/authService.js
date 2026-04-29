@@ -12,7 +12,7 @@ const normalizeRole = (role) => String(role || '').trim().toLowerCase();
 const buildRedirectPath = (role) => {
     if (role === APP_ROLES.admin) return '/admin/management';
     if (role === APP_ROLES.teacher) return '/teacher/materials';
-    return '/student/materials';
+    if (role === APP_ROLES.student) return '/student/materials';
 };
 
 const toPublicUser = (user) => ({
@@ -30,7 +30,6 @@ export const resolveLoginUser = async (prisma, { role, email, password }) => {
         const admin = ADMIN_ACCOUNTS.find(
             (account) => account.email.toLowerCase() === normalizedEmail && account.password === String(password)
         );
-
         if (!admin) return null;
 
         return {
@@ -58,7 +57,8 @@ export const resolveLoginUser = async (prisma, { role, email, password }) => {
             name: true,
             email: true,
             role: true,
-            passwordHash: true
+            passwordHash: true,
+            status: true 
         }
     });
 
@@ -67,8 +67,13 @@ export const resolveLoginUser = async (prisma, { role, email, password }) => {
     const passwordMatches = await bcrypt.compare(String(password), dbUser.passwordHash);
     if (!passwordMatches) return null;
 
-    const user = toPublicUser(dbUser);
+    if (normalizedRole === 'student' && dbUser.status === 'Blocked') {
+        const error = new Error('Your account has been blocked. Please contact the administrator.');
+        error.statusCode = 403;
+        throw error;
+    }
 
+    const user = toPublicUser(dbUser);
     return {
         user,
         redirectTo: buildRedirectPath(user.role)

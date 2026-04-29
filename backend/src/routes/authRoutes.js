@@ -7,39 +7,47 @@ export const createAuthRoutes = (prisma) => {
     const authRoutes = Router();
 
     authRoutes.post('/login', async (req, res) => {
-        const { role, email, password } = req.body;
+        try {
+            const { role, email, password } = req.body;
 
-        if (!role || !email || !password) {
-            return res.status(400).json({ error: 'role, email, and password are required.' });
+            if (!role || !email || !password) {
+                return res.status(400).json({ error: 'role, email, and password are required.' });
+            }
+
+            if (!isEmail(email)) {
+                return res.status(400).json({ error: 'A valid email is required.' });
+            }
+
+            const normalizedRole = normalizeRole(role);
+
+            if (!['admin', 'student', 'teacher'].includes(normalizedRole)) {
+                return res.status(400).json({ error: 'Invalid role. Supported roles: admin, teacher, student.' });
+            }
+
+            const loginResult = await resolveLoginUser(prisma, {
+                role: normalizedRole,
+                email,
+                password
+            });
+
+            if (!loginResult) {
+                return res.status(401).json({ error: 'Invalid credentials.' });
+            }
+
+            const token = issueToken(loginResult.user);
+
+            return res.json({
+                token,
+                user: loginResult.user,
+                redirectTo: loginResult.redirectTo
+            });
+        } catch (error) {
+            const statusCode = error.statusCode || 500;
+            return res.status(statusCode).json({
+                error: error.message || 'Internal server error',
+                details: statusCode === 500 ? error.message : undefined
+            });
         }
-
-        if (!isEmail(email)) {
-            return res.status(400).json({ error: 'A valid email is required.' });
-        }
-
-        const normalizedRole = normalizeRole(role);
-
-        if (!['admin', 'student', 'teacher'].includes(normalizedRole)) {
-            return res.status(400).json({ error: 'Invalid role. Supported roles: admin, teacher, student.' });
-        }
-
-        const loginResult = await resolveLoginUser(prisma, {
-            role: normalizedRole,
-            email,
-            password
-        });
-
-        if (!loginResult) {
-            return res.status(401).json({ error: 'Invalid credentials.' });
-        }
-
-        const token = issueToken(loginResult.user);
-
-        return res.json({
-            token,
-            user: loginResult.user,
-            redirectTo: loginResult.redirectTo
-        });
     });
 
     authRoutes.post('/signup', async (req, res) => {
