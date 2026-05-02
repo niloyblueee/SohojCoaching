@@ -1,4 +1,5 @@
 import { createApp, prisma } from './app.js';
+import { startFeeScheduler } from './services/feeSchedulerService.js';
 
 const PORT = process.env.PORT || 3000;
 
@@ -8,6 +9,8 @@ export async function startServer() {
     try {
         await prisma.$connect();
         console.log('Successfully connected to the database.');
+        startFeeScheduler(prisma);
+        console.log('Monthly fee scheduler started.');
 
         const server = app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);

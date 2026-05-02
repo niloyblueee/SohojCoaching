@@ -293,6 +293,8 @@ export const deleteBatch = async (prisma, id) => {
 
     await prisma.$transaction([
         prisma.teacherAssignment.deleteMany({ where: { batchId: id } }),
+        prisma.feeDue.deleteMany({ where: { enrollment: { batchId: id } } }),
+        prisma.feePayment.deleteMany({ where: { enrollment: { batchId: id } } }),
         prisma.enrollment.deleteMany({ where: { batchId: id } }),
         prisma.studyMaterial.deleteMany({ where: { batchId: id } }),
         prisma.studentScript.deleteMany({ where: { batchId: id } }),

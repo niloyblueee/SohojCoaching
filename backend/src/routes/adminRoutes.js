@@ -183,7 +183,19 @@ export const createAdminRoutes = (prisma) => {
                         FROM attendance_records ar
                         JOIN attendance_sessions s ON s.id = ar.session_id
                         WHERE s.batch_id = b.id
-                    ) AS attended_marks
+                    ) AS attended_marks,
+                    (
+                        SELECT COALESCE(SUM(fd.amount_due), 0)::int
+                        FROM fee_dues fd
+                        JOIN enrollments e ON e.id = fd.enrollment_id
+                        WHERE e.batch_id = b.id
+                    ) AS fee_total_payable,
+                    (
+                        SELECT COALESCE(SUM(fp.amount_paid), 0)::int
+                        FROM fee_payments fp
+                        JOIN enrollments e ON e.id = fp.enrollment_id
+                        WHERE e.batch_id = b.id
+                    ) AS fee_total_paid
                 FROM batches b
                 ORDER BY batch_name ASC
             `;
@@ -192,6 +204,12 @@ export const createAdminRoutes = (prisma) => {
                 const totalMarks = Number(row.total_marks || 0);
                 const attendedMarks = Number(row.attended_marks || 0);
                 const attendanceRate = totalMarks > 0 ? Number(((attendedMarks / totalMarks) * 100).toFixed(2)) : 0;
+                const feeTotalPayable = Number(row.fee_total_payable || 0);
+                const feeTotalPaid = Number(row.fee_total_paid || 0);
+                const feeCollectionRate =
+                    feeTotalPayable > 0 ? Number(((feeTotalPaid / feeTotalPayable) * 100).toFixed(2)) : 0;
+                const feeStatus =
+                    feeTotalPayable > 0 ? `${feeCollectionRate.toFixed(2)}% Collected` : 'No dues yet';
 
                 return {
                     id: row.id,
@@ -199,7 +217,10 @@ export const createAdminRoutes = (prisma) => {
                     course: row.course,
                     total_students: Number(row.total_students || 0),
                     attendance_rate: attendanceRate,
-                    fee_status: 'Pending Integration',
+                    fee_status: feeStatus,
+                    fee_total_payable: feeTotalPayable,
+                    fee_total_paid: feeTotalPaid,
+                    fee_collection_rate: feeCollectionRate,
                     total_marks: totalMarks,
                     attended_marks: attendedMarks
                 };
@@ -211,14 +232,27 @@ export const createAdminRoutes = (prisma) => {
                     acc.total_students += batch.total_students;
                     acc.total_marks += batch.total_marks;
                     acc.attended_marks += batch.attended_marks;
+                    acc.fee_total_payable += batch.fee_total_payable;
+                    acc.fee_total_paid += batch.fee_total_paid;
                     return acc;
                 },
-                { total_batches: 0, total_students: 0, total_marks: 0, attended_marks: 0 }
+                {
+                    total_batches: 0,
+                    total_students: 0,
+                    total_marks: 0,
+                    attended_marks: 0,
+                    fee_total_payable: 0,
+                    fee_total_paid: 0
+                }
             );
 
             const overall_attendance_rate =
                 summary.total_marks > 0
                     ? Number(((summary.attended_marks / summary.total_marks) * 100).toFixed(2))
+                    : 0;
+            const overall_fee_collection_rate =
+                summary.fee_total_payable > 0
+                    ? Number(((summary.fee_total_paid / summary.fee_total_payable) * 100).toFixed(2))
                     : 0;
 
             return res.json({
@@ -226,7 +260,10 @@ export const createAdminRoutes = (prisma) => {
                 summary: {
                     total_batches: summary.total_batches,
                     total_students: summary.total_students,
-                    overall_attendance_rate
+                    overall_attendance_rate,
+                    fee_total_payable: summary.fee_total_payable,
+                    fee_total_paid: summary.fee_total_paid,
+                    overall_fee_collection_rate
                 },
                 batches: normalized
             });

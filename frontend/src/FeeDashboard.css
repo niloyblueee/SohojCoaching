@@ -1,0 +1,402 @@
+.fee-shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0.6rem;
+    font-family: 'Nunito', sans-serif;
+}
+
+.fee-shell-admin {
+    color: #1f2e4d;
+}
+
+.fee-shell-student {
+    color: #163562;
+}
+
+.fee-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.fee-header h2 {
+    margin: 0.2rem 0 0.35rem;
+    font-family: 'Chakra Petch', sans-serif;
+    color: #1f3f7b;
+}
+
+.fee-header p {
+    margin: 0;
+    color: #3d598d;
+    max-width: 70ch;
+}
+
+.fee-kicker {
+    margin: 0;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #4e6db1;
+    font-weight: 700;
+}
+
+.fee-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.fee-generated-at {
+    margin: -0.2rem 0 0.7rem;
+    color: #49649a;
+    font-size: 0.84rem;
+}
+
+.fee-btn {
+    border: 0;
+    min-height: 40px;
+    border-radius: 10px;
+    padding: 0.46rem 0.9rem;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+}
+
+.fee-btn.small {
+    min-height: 34px;
+    padding: 0.35rem 0.72rem;
+    font-size: 0.82rem;
+}
+
+.fee-btn.primary {
+    color: #f9fbff;
+    background: linear-gradient(120deg, #2d3b7f, #3a79c1);
+}
+
+.fee-btn.ghost {
+    color: #2c4e8f;
+    border: 1px solid #bfd1f5;
+    background: rgba(255, 255, 255, 0.82);
+}
+
+.fee-btn:disabled {
+    opacity: 0.58;
+    cursor: not-allowed;
+}
+
+.fee-status {
+    margin: 0 0 0.75rem;
+    color: #1d5f47;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid #b9dfcf;
+    border-radius: 10px;
+    padding: 0.65rem 0.8rem;
+}
+
+.fee-status-error {
+    color: #8f2842;
+    border-color: #efbdd0;
+    background: rgba(255, 250, 252, 0.82);
+}
+
+.fee-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.fee-stat-card {
+    border-radius: 12px;
+    border: 1px solid transparent;
+    padding: 0.85rem;
+    box-shadow: 0 10px 20px rgba(24, 45, 90, 0.12);
+}
+
+.fee-stat-card p {
+    margin: 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #cfe0ff;
+}
+
+.fee-stat-card strong {
+    display: inline-block;
+    margin-top: 0.36rem;
+    font-size: 1.25rem;
+    font-family: 'Chakra Petch', sans-serif;
+    color: #ffffff;
+}
+
+.fee-stat-card-primary {
+    background: linear-gradient(125deg, #2f4f95, #3b77bd);
+    border-color: #6e9ae2;
+}
+
+.fee-stat-card-success {
+    background: linear-gradient(125deg, #1e7a64, #2e9b83);
+    border-color: #6cc6b1;
+}
+
+.fee-stat-card-danger {
+    background: linear-gradient(125deg, #8f344c, #af4b63);
+    border-color: #d68498;
+}
+
+.fee-stat-card-neutral {
+    background: linear-gradient(125deg, #3f4c6c, #53658e);
+    border-color: #8f9dc0;
+}
+
+.fee-table-wrap,
+.fee-detail-panel,
+.fee-enrollment-card {
+    border: 1px solid #c9d8f5;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 8px 18px rgba(32, 56, 102, 0.12);
+}
+
+.fee-table-wrap {
+    overflow: auto;
+}
+
+.fee-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fee-table th,
+.fee-table td {
+    border-bottom: 1px solid #d5e1f9;
+    padding: 0.72rem 0.78rem;
+    text-align: left;
+    vertical-align: top;
+    font-size: 0.9rem;
+    color: #2a3f67;
+}
+
+.fee-table th {
+    background: #edf3ff;
+    color: #264f98;
+    font-size: 0.84rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.fee-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.fee-progress-meta {
+    color: #3d5689;
+    font-size: 0.82rem;
+    margin-bottom: 0.32rem;
+}
+
+.fee-progress-track {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(92, 124, 185, 0.25);
+    overflow: hidden;
+}
+
+.fee-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #55c39d, #4d8de1);
+}
+
+.fee-row-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.fee-next-due {
+    display: block;
+    margin-top: 0.38rem;
+    color: #4a6398;
+}
+
+.fee-detail-panel {
+    margin-top: 0.92rem;
+    padding: 0.82rem;
+}
+
+.fee-detail-panel h3 {
+    margin: 0 0 0.72rem;
+    color: #25437f;
+}
+
+.fee-detail-table-wrap {
+    overflow: auto;
+}
+
+.fee-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fee-detail-table th,
+.fee-detail-table td {
+    border-bottom: 1px solid #d9e4f9;
+    padding: 0.62rem 0.68rem;
+    text-align: left;
+    font-size: 0.88rem;
+    color: #263b65;
+}
+
+.fee-detail-table th {
+    background: #f0f5ff;
+    color: #2b56a0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.fee-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+    border-radius: 999px;
+    padding: 0.24rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.fee-badge-paid {
+    background: linear-gradient(125deg, #1c8b6a, #2ba483);
+}
+
+.fee-badge-unpaid {
+    background: linear-gradient(125deg, #a23e58, #bc5670);
+}
+
+.fee-empty {
+    margin: 0;
+    color: #415d91;
+    padding: 0.84rem;
+}
+
+.fee-card-list {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.fee-enrollment-card {
+    padding: 0.82rem;
+}
+
+.fee-enrollment-card header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.8rem;
+}
+
+.fee-enrollment-card h3 {
+    margin: 0;
+    color: #1f437f;
+}
+
+.fee-enrollment-card p {
+    margin: 0.24rem 0 0.68rem;
+    color: #3b5688;
+}
+
+.fee-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 22, 45, 0.44);
+    display: grid;
+    place-items: center;
+    z-index: 1200;
+    padding: 1rem;
+}
+
+.fee-modal {
+    width: min(470px, 96vw);
+    border-radius: 14px;
+    border: 1px solid #cad8f5;
+    background: #f9fbff;
+    box-shadow: 0 18px 36px rgba(18, 33, 72, 0.28);
+    padding: 1rem;
+}
+
+.fee-modal h3 {
+    margin: 0;
+    color: #24457f;
+}
+
+.fee-modal p {
+    margin: 0.46rem 0 0;
+    color: #415c8e;
+}
+
+.fee-modal-due {
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    color: #234e92;
+}
+
+.fee-modal-form {
+    display: grid;
+    gap: 0.62rem;
+}
+
+.fee-modal-form label {
+    display: grid;
+    gap: 0.32rem;
+    font-size: 0.87rem;
+    color: #2a4a84;
+}
+
+.fee-modal-form input,
+.fee-modal-form select {
+    min-height: 40px;
+    border-radius: 9px;
+    border: 1px solid #bed0f5;
+    padding: 0.45rem 0.56rem;
+    font-family: 'Nunito', sans-serif;
+    color: #203e73;
+    background: #ffffff;
+}
+
+.fee-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    margin-top: 0.28rem;
+}
+
+@media (max-width: 1024px) {
+    .fee-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .fee-header {
+        flex-direction: column;
+    }
+
+    .fee-stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fee-table th,
+    .fee-table td,
+    .fee-detail-table th,
+    .fee-detail-table td {
+        font-size: 0.82rem;
+    }
+
+    .fee-enrollment-card header {
+        flex-direction: column;
+    }
+}

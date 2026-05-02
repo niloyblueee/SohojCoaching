@@ -7,7 +7,8 @@ function BatchOverviewPage() {
         summary: {
             total_batches: 0,
             total_students: 0,
-            overall_attendance_rate: 0
+            overall_attendance_rate: 0,
+            overall_fee_collection_rate: 0
         },
         batches: []
     });
@@ -24,7 +25,8 @@ function BatchOverviewPage() {
                 summary: data.summary || {
                     total_batches: 0,
                     total_students: 0,
-                    overall_attendance_rate: 0
+                    overall_attendance_rate: 0,
+                    overall_fee_collection_rate: 0
                 },
                 batches: data.batches || []
             });
@@ -46,8 +48,7 @@ function BatchOverviewPage() {
                     <p className="batch-overview-kicker">FR-5: Batch Overview</p>
                     <h2>Batch Overview</h2>
                     <p className="batch-overview-sub">
-                        See per-batch student totals and attendance performance. Fee status is shown as a placeholder
-                        until fee management is integrated.
+                        See per-batch student totals, attendance performance, and fee collection health.
                     </p>
                 </div>
                 <button type="button" className="batch-overview-refresh" onClick={loadOverview} disabled={loading}>
@@ -69,6 +70,11 @@ function BatchOverviewPage() {
                 <article className="batch-overview-card">
                     <p>Overall Attendance Rate</p>
                     <strong>{Number(overview.summary.overall_attendance_rate || 0).toFixed(2)}%</strong>
+                </article>
+
+                <article className="batch-overview-card">
+                    <p>Overall Fee Collection</p>
+                    <strong>{Number(overview.summary.overall_fee_collection_rate || 0).toFixed(2)}%</strong>
                 </article>
             </div>
 
@@ -98,7 +104,7 @@ function BatchOverviewPage() {
                                     <td>{batch.course}</td>
                                     <td>{batch.total_students}</td>
                                     <td>{Number(batch.attendance_rate || 0).toFixed(2)}%</td>
-                                    <td>{batch.fee_status || 'Pending Integration'}</td>
+                                    <td>{batch.fee_status || 'No dues yet'}</td>
                                 </tr>
                             ))}
                         </tbody>

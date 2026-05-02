@@ -64,8 +64,10 @@ model Enrollment {
   status     EnrollmentStatus @default(active)
   enrolledAt DateTime         @default(now()) @map("enrolled_at")
 
-  student User  @relation(fields: [studentId], references: [id])
-  batch   Batch @relation(fields: [batchId], references: [id])
+  student     User         @relation(fields: [studentId], references: [id])
+  batch       Batch        @relation(fields: [batchId], references: [id])
+  feePayments FeePayment[]
+  feeDues     FeeDue[]
 
   @@unique([studentId, batchId])
   @@map("enrollments")
@@ -174,9 +176,29 @@ model FeePayment {
   paymentDate      DateTime   @default(now())  @map("payment_date")
   recordedBy       String?    @map("recorded_by") @db.Uuid
   amountPaid       Int        @map("amount_paid")
+  enrollment       Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@unique([enrollmentId, monthNumber])
   @@index([paymentDate])
   @@index([enrollmentId])
   @@map("fee_payments")
+}
+
+model FeeDue {
+  id          String     @id @default(uuid()) @db.Uuid
+  enrollmentId String    @map("enrollment_id") @db.Uuid
+  monthNumber Int        @map("month_number")
+  dueMonth    DateTime   @map("due_month") @db.Date
+  amountDue   Int        @map("amount_due")
+  status      String     @default("unpaid") @db.VarChar(20)
+  generatedAt DateTime   @default(now()) @map("generated_at")
+  paidAt      DateTime?  @map("paid_at")
+  enrollment  Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, monthNumber])
+  @@unique([enrollmentId, dueMonth])
+  @@index([dueMonth])
+  @@index([status])
+  @@index([enrollmentId])
+  @@map("fee_dues")
 }
