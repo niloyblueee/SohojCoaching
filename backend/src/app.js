@@ -7,6 +7,7 @@ import { createPublicRoutes } from './routes/publicRoutes.js';
 import { createAdminRoutes } from './routes/adminRoutes.js';
 import { createAttendanceRoutes } from './routes/attendanceRoutes.js';
 import { createFeeRoutes } from './routes/feeRoutes.js';
+import { createQuizRoutes } from './routes/quizRoutes.js';
 
 export const prisma = new PrismaClient();
 
@@ -21,7 +22,8 @@ export const createApp = () => {
     app.use('/api', createPublicRoutes(prisma));
     app.use('/api', createAdminRoutes(prisma));
     app.use('/api', createAttendanceRoutes(prisma));
-    app.use('/api', createFeeRoutes(prisma))
+    app.use('/api', createFeeRoutes(prisma));
+    app.use('/api', createQuizRoutes(prisma));
 
     return app;
 };

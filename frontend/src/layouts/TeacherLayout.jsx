@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-do
 import MaterialTeacherView from '../MaterialTeacherView';
 import ScriptUploadView from '../ScriptUploadView';
 import AttendanceTeacherAnalytics from '../AttendanceTeacherAnalytics';
+import TeacherQuizCreationView from '../TeacherQuizCreationView';
 
 function TeacherLayout({ user, onLogout }) {
     return (
@@ -23,6 +24,7 @@ function TeacherLayout({ user, onLogout }) {
                     <NavLink to="/teacher/materials">Materials</NavLink>
                     <NavLink to="/teacher/scripts">Exam Scripts</NavLink>
                     <NavLink to="/teacher/attendance">Attendance</NavLink>
+                    <NavLink to="/teacher/quizzes">Quizzes</NavLink>
                 </nav>
 
                 <main className="role-content">
@@ -31,6 +33,7 @@ function TeacherLayout({ user, onLogout }) {
                         <Route path="/teacher/materials" element={<MaterialTeacherView currentUser={user} />} />
                         <Route path="/teacher/scripts" element={<ScriptUploadView currentUser={user} />} />
                         <Route path="/teacher/attendance" element={<AttendanceTeacherAnalytics />} />
+                        <Route path="/teacher/quizzes" element={<TeacherQuizCreationView />} />
                         <Route path="*" element={<Navigate to="/teacher/materials" replace />} />
                     </Routes>
                 </main>

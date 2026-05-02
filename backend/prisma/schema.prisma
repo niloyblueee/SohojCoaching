@@ -23,6 +23,7 @@ model User {
   attendanceSessionsCreated AttendanceSession[] @relation("AttendanceSessionCreator")
   attendanceAsStudent       AttendanceRecord[]  @relation("AttendanceStudent")
   attendanceMarked          AttendanceRecord[]  @relation("AttendanceMarker")
+  createdQuizzes            Quiz[]              @relation("QuizTeacher")
 
   @@map("users")
 }
@@ -47,6 +48,7 @@ model Batch {
   studyMaterials     StudyMaterial[]
   studentScripts     StudentScript[]
   attendanceSessions AttendanceSession[]
+  quizzes            Quiz[]
 
   @@map("batches")
 }
@@ -201,4 +203,46 @@ model FeeDue {
   @@index([status])
   @@index([enrollmentId])
   @@map("fee_dues")
+}
+
+model Quiz {
+  id               String         @id @default(uuid()) @db.Uuid
+  batchId          String         @map("batch_id") @db.Uuid
+  teacherId        String         @map("teacher_id") @db.Uuid
+  title            String         @db.VarChar(180)
+  description      String?
+  availabilityType String         @map("availability_type") @db.VarChar(20)
+  startsAt         DateTime?      @map("starts_at")
+  durationMinutes  Int            @map("duration_minutes")
+  attemptMode      String         @map("attempt_mode") @db.VarChar(20)
+  isActive         Boolean        @default(true) @map("is_active")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  batch            Batch          @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  teacher          User           @relation("QuizTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  questions        QuizQuestion[]
+
+  @@index([batchId])
+  @@index([teacherId])
+  @@index([isActive])
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id                 String   @id @default(uuid()) @db.Uuid
+  quizId             String   @map("quiz_id") @db.Uuid
+  orderNo            Int      @map("order_no")
+  questionType       String   @map("question_type") @db.VarChar(20)
+  questionText       String?  @map("question_text")
+  questionImageData  String?  @map("question_image_data")
+  marks              Int      @default(1)
+  mcqOptions         Json?    @map("mcq_options")
+  correctOptionIndex Int?     @map("correct_option_index")
+  allowFileUpload    Boolean  @default(false) @map("allow_file_upload")
+  createdAt          DateTime @default(now()) @map("created_at")
+  quiz               Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, orderNo])
+  @@index([quizId])
+  @@map("quiz_questions")
 }
