@@ -1,4 +1,12 @@
-import { createQuiz, getStudentQuizzes, getTeacherQuizzes } from '../services/quizService.js';
+import {
+    createQuiz,
+    getStudentQuizAttempt,
+    getStudentQuizzes,
+    getTeacherQuizScripts,
+    getTeacherQuizzes,
+    startQuizAttempt,
+    submitQuizAttempt
+} from '../services/quizService.js';
 
 export const createQuizController = (prisma) => async (req, res) => {
     try {
@@ -10,6 +18,7 @@ export const createQuizController = (prisma) => async (req, res) => {
             description: req.body?.description,
             availabilityType: req.body?.availability_type,
             startsAt: req.body?.starts_at,
+            entryCloseAt: req.body?.entry_close_at,
             durationMinutes: req.body?.duration_minutes,
             attemptMode: req.body?.attempt_mode,
             questions: req.body?.questions
@@ -48,5 +57,61 @@ export const getStudentQuizzesController = (prisma) => async (req, res) => {
     } catch (error) {
         const statusCode = error.statusCode || 500;
         return res.status(statusCode).json({ error: error.message || 'Failed to fetch student quizzes.' });
+    }
+};
+
+export const getTeacherQuizScriptsController = (prisma) => async (req, res) => {
+    try {
+        const payload = await getTeacherQuizScripts(prisma, {
+            requesterId: req.auth?.sub,
+            requesterRole: req.auth?.role,
+            batchId: req.query?.batch_id,
+            quizId: req.query?.quiz_id
+        });
+
+        return res.json(payload);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({ error: error.message || 'Failed to fetch quiz scripts.' });
+    }
+};
+
+export const startStudentQuizAttemptController = (prisma) => async (req, res) => {
+    try {
+        const payload = await startQuizAttempt(prisma, {
+            studentId: req.auth?.sub,
+            quizId: req.params?.quizId
+        });
+        return res.json(payload);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({ error: error.message || 'Failed to start quiz attempt.' });
+    }
+};
+
+export const getStudentQuizAttemptController = (prisma) => async (req, res) => {
+    try {
+        const payload = await getStudentQuizAttempt(prisma, {
+            studentId: req.auth?.sub,
+            attemptId: req.params?.attemptId
+        });
+        return res.json(payload);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({ error: error.message || 'Failed to load quiz attempt.' });
+    }
+};
+
+export const submitStudentQuizAttemptController = (prisma) => async (req, res) => {
+    try {
+        const payload = await submitQuizAttempt(prisma, {
+            studentId: req.auth?.sub,
+            attemptId: req.params?.attemptId,
+            answers: req.body?.answers
+        });
+        return res.json(payload);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({ error: error.message || 'Failed to submit quiz attempt.' });
     }
 };

@@ -136,7 +136,7 @@ function AttendanceTeacherAnalytics() {
         }
     }, [analytics, batchId, studentId]);
 
-        useEffect(() => {
+    useEffect(() => {
         const fetchSession = async () => {
             if (!batchId) {
                 setSessionRecords([]);
@@ -161,7 +161,7 @@ function AttendanceTeacherAnalytics() {
     }, [batchId, attendanceDate]);
 
     const handleToggleStatus = (studentId, newStatus) => {
-        setSessionRecords(prev => 
+        setSessionRecords(prev =>
             prev.map(rec => rec.student_id === studentId ? { ...rec, status: newStatus } : rec)
         );
         setHasChanges(true);
@@ -197,11 +197,11 @@ function AttendanceTeacherAnalytics() {
         total_sessions: 0
     };
 
-    const courseWise = analytics?.course_wise || [];
-    const studentWise = analytics?.student_wise || [];
-    const trend = analytics?.trend || [];
-    const availableBatches = analytics?.available_batches || [];
-    const availableStudents = analytics?.available_students || [];
+    const courseWise = useMemo(() => analytics?.course_wise ?? [], [analytics]);
+    const studentWise = useMemo(() => analytics?.student_wise ?? [], [analytics]);
+    const trend = useMemo(() => analytics?.trend ?? [], [analytics]);
+    const availableBatches = useMemo(() => analytics?.available_batches ?? [], [analytics]);
+    const availableStudents = useMemo(() => analytics?.available_students ?? [], [analytics]);
 
     const topCourse = useMemo(() => {
         if (!courseWise.length) return null;
@@ -299,56 +299,56 @@ function AttendanceTeacherAnalytics() {
                                     </thead>
                                     <tbody>
                                         {sessionRecords.filter(record => !studentId || record.student_id === studentId).map(record => (
-                                        <tr key={record.student_id}>
-                                            <td>{record.student_name}</td>
-                                            <td>
-                                                <div style={{ display: 'flex', gap: '0' }}>
-                                                    <button
-                                                    type="button"
-                                                    style={{
-                                                        padding: '6px 14px', cursor: 'pointer', border: '1px solid #289f6c',
-                                                        background: record.status === 'present' ? '#289f6c' : 'transparent',
-                                                        color: record.status === 'present' ? '#fff' : '#289f6c',
-                                                        borderTopLeftRadius: '6px', borderBottomLeftRadius: '6px',
-                                                        borderTopRightRadius: '0', borderBottomRightRadius: '0'
-                                                    }}
-                                                    onClick={() => handleToggleStatus(record.student_id, 'present')}
-                                                    >
-                                                        Present
-                                                    </button>
-                                                    <button
-                                                    type="button"
-                                                    style={{
-                                                        padding: '6px 14px', cursor: 'pointer', border: '1px solid #b93f54', borderLeft: 'none',
-                                                        background: record.status === 'absent' ? '#b93f54' : 'transparent',
-                                                        color: record.status === 'absent' ? '#fff' : '#b93f54',
-                                                        borderTopRightRadius: '6px', borderBottomRightRadius: '6px',
-                                                        borderTopLeftRadius: '0', borderBottomLeftRadius: '0'
-                                                    }}
-                                                    onClick={() => handleToggleStatus(record.student_id, 'absent')}
-                                                    >
-                                                        Absent
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                            <tr key={record.student_id}>
+                                                <td>{record.student_name}</td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: '0' }}>
+                                                        <button
+                                                            type="button"
+                                                            style={{
+                                                                padding: '6px 14px', cursor: 'pointer', border: '1px solid #289f6c',
+                                                                background: record.status === 'present' ? '#289f6c' : 'transparent',
+                                                                color: record.status === 'present' ? '#fff' : '#289f6c',
+                                                                borderTopLeftRadius: '6px', borderBottomLeftRadius: '6px',
+                                                                borderTopRightRadius: '0', borderBottomRightRadius: '0'
+                                                            }}
+                                                            onClick={() => handleToggleStatus(record.student_id, 'present')}
+                                                        >
+                                                            Present
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            style={{
+                                                                padding: '6px 14px', cursor: 'pointer', border: '1px solid #b93f54', borderLeft: 'none',
+                                                                background: record.status === 'absent' ? '#b93f54' : 'transparent',
+                                                                color: record.status === 'absent' ? '#fff' : '#b93f54',
+                                                                borderTopRightRadius: '6px', borderBottomRightRadius: '6px',
+                                                                borderTopLeftRadius: '0', borderBottomLeftRadius: '0'
+                                                            }}
+                                                            onClick={() => handleToggleStatus(record.student_id, 'absent')}
+                                                        >
+                                                            Absent
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         ))}
                                     </tbody>
                                 </table>
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '18px' }}>
-                                    <button 
-                                        type="button" 
-                                        onClick={handleSaveSession} 
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveSession}
                                         disabled={!hasChanges}
                                         style={{ background: hasChanges ? '#4463ff' : '#3a4965', opacity: hasChanges ? 1 : 0.6 }}
                                     >
                                         Save Attendance
                                     </button>
-                                    
+
                                     {hasChanges && (
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             onClick={handleCancelChanges}
                                             style={{ background: 'transparent', border: '1px solid #7a93c0', color: '#cfdbf5' }}
                                         >
@@ -410,7 +410,7 @@ function AttendanceTeacherAnalytics() {
                     <RateTrendChart points={trend} />
                 </article>
             </div>
-            
+
             <article className="attendance-panel">
                 <h3>Student-wise Breakdown</h3>
 

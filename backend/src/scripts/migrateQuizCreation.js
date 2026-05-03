@@ -13,6 +13,7 @@ const statements = [
       description TEXT NULL,
       availability_type VARCHAR(20) NOT NULL CHECK (availability_type IN ('anytime', 'scheduled')),
       starts_at TIMESTAMPTZ NULL,
+      entry_close_at TIMESTAMPTZ NULL,
       duration_minutes INT NOT NULL CHECK (duration_minutes > 0),
       attempt_mode VARCHAR(20) NOT NULL CHECK (attempt_mode IN ('one_time', 'repeatable')),
       is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -23,6 +24,7 @@ const statements = [
     'CREATE INDEX IF NOT EXISTS idx_quizzes_batch_id ON quizzes(batch_id)',
     'CREATE INDEX IF NOT EXISTS idx_quizzes_teacher_id ON quizzes(teacher_id)',
     'CREATE INDEX IF NOT EXISTS idx_quizzes_is_active ON quizzes(is_active)',
+    'CREATE INDEX IF NOT EXISTS idx_quizzes_entry_close_at ON quizzes(entry_close_at)',
     `
     CREATE TABLE IF NOT EXISTS quiz_questions (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

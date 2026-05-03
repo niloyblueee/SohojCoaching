@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import EditProfile from "./EditProfile";
 import { apiFetch } from "../../services/httpClient";
 
@@ -6,7 +6,7 @@ const StudentList = () => {
   const [users, setStudents] = useState([]);
   const [error, setError] = useState('');
 
-  const getStudents = async () => {
+  const getStudents = useCallback(async () => {
     try {
       // Uses centralized apiFetch with auth token injection
       const data = await apiFetch("/studentProfile", { withAuth: true });
@@ -14,7 +14,7 @@ const StudentList = () => {
     } catch (err) {
       setError(err.message);
     }
-  };
+  }, []);
 
   const updateStatus = async (id, newStatus) => {
     try {
@@ -24,17 +24,23 @@ const StudentList = () => {
         withAuth: true
       });
       // Update UI instantly
-      setStudents(users.map(user => 
-        user.id === id ? { ...user, status: newStatus } : user
-      ));
+      setStudents((prevUsers) =>
+        prevUsers.map((user) => (user.id === id ? { ...user, status: newStatus } : user))
+      );
     } catch (err) {
       setError(err.message);
     }
   };
 
   useEffect(() => {
-    getStudents();
-  }, []);
+    const timer = setTimeout(() => {
+      void getStudents();
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [getStudents]);
 
   return (
     <div className="batch-page"> {/* Reusing your existing container styles */}
@@ -61,7 +67,7 @@ const StudentList = () => {
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>
-                  <span style={{ 
+                  <span style={{
                     color: user.status === 'Blocked' ? '#ffb0be' : '#5fe2ad',
                     fontWeight: 'bold'
                   }}>
@@ -70,7 +76,7 @@ const StudentList = () => {
                 </td>
                 <td style={{ display: 'flex', gap: '10px' }}>
                   <EditProfile user={user} onUpdateSuccess={getStudents} />
-                  
+
                   <button
                     className="batch-btn ghost"
                     onClick={() => updateStatus(user.id, user.status === 'Blocked' ? 'Verified' : 'Blocked')}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import BatchList from './components/batches/BatchList';
 import CreateBatchModal from './components/batches/CreateBatchModal';
 import EditBatchModal from './components/batches/EditBatchModal';
@@ -26,7 +26,7 @@ function BatchManagementPage() {
         [batches]
     );
 
-    const loadPageData = async () => {
+    const loadPageData = useCallback(async () => {
         setLoading(true);
         setStatus('');
         try {
@@ -41,11 +41,11 @@ function BatchManagementPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [search, sortOrder]);
 
     useEffect(() => {
         loadPageData();
-    }, [search, sortOrder]);
+    }, [loadPageData]);
 
     const handleCreateBatch = async (payload) => {
         await createBatch(payload);
@@ -131,6 +131,7 @@ function BatchManagementPage() {
             />
 
             <EditBatchModal
+                key={editingBatch?.id || 'edit-batch-modal'}
                 open={Boolean(editingBatch)}
                 teachers={teachers}
                 batch={editingBatch}

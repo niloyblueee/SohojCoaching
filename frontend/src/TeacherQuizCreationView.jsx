@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import './QuizWorkspace.css';
 import { apiFetch } from './services/httpClient';
 import { createTeacherQuiz, getTeacherQuizzes } from './services/quizApi';
@@ -49,6 +49,7 @@ function TeacherQuizCreationView() {
     description: '',
     availabilityType: 'anytime',
     startsAt: '',
+    entryCloseAt: '',
     durationMinutes: 30,
     attemptMode: 'one_time',
     questions: [newMcqQuestion()]
@@ -63,7 +64,7 @@ function TeacherQuizCreationView() {
     [form.questions]
   );
 
-  const loadBatches = async () => {
+  const loadBatches = useCallback(async () => {
     try {
       const data = await apiFetch('/batches', { withAuth: true });
       setBatches(Array.isArray(data) ? data : []);
@@ -71,9 +72,9 @@ function TeacherQuizCreationView() {
     } catch (err) {
       setError(err.message || 'Failed to load teacher batches.');
     }
-  };
+  }, []);
 
-  const loadQuizzes = async (batchId) => {
+  const loadQuizzes = useCallback(async (batchId) => {
     if (!batchId) {
       setQuizzes([]);
       return;
@@ -87,15 +88,15 @@ function TeacherQuizCreationView() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadBatches();
   }, []);
 
   useEffect(() => {
+    loadBatches();
+  }, [loadBatches]);
+
+  useEffect(() => {
     loadQuizzes(selectedBatch);
-  }, [selectedBatch]);
+  }, [selectedBatch, loadQuizzes]);
 
   const updateQuestion = (localId, updater) => {
     setForm((prev) => ({
@@ -137,6 +138,7 @@ function TeacherQuizCreationView() {
     }
 
     let startsAtIso = null;
+    let entryCloseAtIso = null;
     if (form.availabilityType === 'scheduled') {
       if (!form.startsAt) {
         setError('Please select a valid scheduled start time.');
@@ -148,6 +150,19 @@ function TeacherQuizCreationView() {
         return;
       }
       startsAtIso = parsedStart.toISOString();
+
+      if (form.entryCloseAt) {
+        const parsedEntryCloseAt = new Date(form.entryCloseAt);
+        if (Number.isNaN(parsedEntryCloseAt.getTime())) {
+          setError('Please provide a valid last entry time.');
+          return;
+        }
+        if (parsedEntryCloseAt.getTime() < parsedStart.getTime()) {
+          setError('Last entry time cannot be earlier than start time.');
+          return;
+        }
+        entryCloseAtIso = parsedEntryCloseAt.toISOString();
+      }
     }
     if (form.availabilityType === 'scheduled' && !startsAtIso) {
       setError('Please select a valid scheduled start time.');
@@ -162,6 +177,7 @@ function TeacherQuizCreationView() {
         description: form.description,
         availability_type: form.availabilityType,
         starts_at: startsAtIso,
+        entry_close_at: entryCloseAtIso,
         duration_minutes: Number(form.durationMinutes),
         attempt_mode: form.availabilityType === 'anytime' ? form.attemptMode : 'one_time',
         questions: form.questions.map((question) => ({
@@ -181,6 +197,7 @@ function TeacherQuizCreationView() {
         title: '',
         description: '',
         startsAt: '',
+        entryCloseAt: '',
         questions: [newMcqQuestion()]
       }));
       await loadQuizzes(selectedBatch);
@@ -264,15 +281,25 @@ function TeacherQuizCreationView() {
               </select>
             </label>
           ) : (
-            <label>
-              Starts At
-              <input
-                type="datetime-local"
-                value={form.startsAt}
-                onChange={(event) => setForm((prev) => ({ ...prev, startsAt: event.target.value }))}
-                required
-              />
-            </label>
+            <>
+              <label>
+                Starts At
+                <input
+                  type="datetime-local"
+                  value={form.startsAt}
+                  onChange={(event) => setForm((prev) => ({ ...prev, startsAt: event.target.value }))}
+                  required
+                />
+              </label>
+              <label>
+                Last Entry Time (optional)
+                <input
+                  type="datetime-local"
+                  value={form.entryCloseAt}
+                  onChange={(event) => setForm((prev) => ({ ...prev, entryCloseAt: event.target.value }))}
+                />
+              </label>
+            </>
           )}
         </div>
 
@@ -510,6 +537,9 @@ function TeacherQuizCreationView() {
                   <span>{quiz.duration_minutes} min</span>
                   <span>{quiz.attempt_mode === 'repeatable' ? 'Repeatable' : 'One Time'}</span>
                 </div>
+                {quiz.entry_close_at && (
+                  <p>Last entry: {new Date(quiz.entry_close_at).toLocaleString()}</p>
+                )}
                 <ul>
                   {quiz.questions.map((question) => (
                     <li key={question.id}>

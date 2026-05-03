@@ -24,6 +24,7 @@ model User {
   attendanceAsStudent       AttendanceRecord[]  @relation("AttendanceStudent")
   attendanceMarked          AttendanceRecord[]  @relation("AttendanceMarker")
   createdQuizzes            Quiz[]              @relation("QuizTeacher")
+  quizAttempts              QuizAttempt[]       @relation("QuizAttemptStudent")
 
   @@map("users")
 }
@@ -213,6 +214,7 @@ model Quiz {
   description      String?
   availabilityType String         @map("availability_type") @db.VarChar(20)
   startsAt         DateTime?      @map("starts_at")
+  entryCloseAt     DateTime?      @map("entry_close_at")
   durationMinutes  Int            @map("duration_minutes")
   attemptMode      String         @map("attempt_mode") @db.VarChar(20)
   isActive         Boolean        @default(true) @map("is_active")
@@ -221,10 +223,12 @@ model Quiz {
   batch            Batch          @relation(fields: [batchId], references: [id], onDelete: Cascade)
   teacher          User           @relation("QuizTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
   questions        QuizQuestion[]
+  attempts         QuizAttempt[]
 
   @@index([batchId])
   @@index([teacherId])
   @@index([isActive])
+  @@index([entryCloseAt])
   @@map("quizzes")
 }
 
@@ -241,8 +245,51 @@ model QuizQuestion {
   allowFileUpload    Boolean  @default(false) @map("allow_file_upload")
   createdAt          DateTime @default(now()) @map("created_at")
   quiz               Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers            QuizAnswer[]
 
   @@unique([quizId, orderNo])
   @@index([quizId])
   @@map("quiz_questions")
+}
+
+model QuizAttempt {
+  id              String      @id @default(uuid()) @db.Uuid
+  quizId          String      @map("quiz_id") @db.Uuid
+  studentId       String      @map("student_id") @db.Uuid
+  attemptNumber   Int         @map("attempt_number")
+  status          String      @db.VarChar(20)
+  startedAt       DateTime    @default(now()) @map("started_at")
+  submittedAt     DateTime?   @map("submitted_at")
+  durationMinutes Int         @map("duration_minutes")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  quiz            Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  student         User        @relation("QuizAttemptStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  answers         QuizAnswer[]
+
+  @@index([quizId])
+  @@index([studentId])
+  @@index([status])
+  @@unique([quizId, studentId, attemptNumber])
+  @@map("quiz_attempts")
+}
+
+model QuizAnswer {
+  id                     String      @id @default(uuid()) @db.Uuid
+  attemptId              String      @map("attempt_id") @db.Uuid
+  questionId             String      @map("question_id") @db.Uuid
+  mcqSelectedOptionIndex Int?        @map("mcq_selected_option_index")
+  broadTextAnswer        String?     @map("broad_text_answer")
+  answerFileData         String?     @map("answer_file_data")
+  answerFileName         String?     @map("answer_file_name") @db.VarChar(255)
+  answerFileType         String?     @map("answer_file_type") @db.VarChar(120)
+  createdAt              DateTime    @default(now()) @map("created_at")
+  updatedAt              DateTime    @updatedAt @map("updated_at")
+  attempt                QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question               QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId])
+  @@index([questionId])
+  @@unique([attemptId, questionId])
+  @@map("quiz_answers")
 }

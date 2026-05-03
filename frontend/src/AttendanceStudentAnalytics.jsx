@@ -74,9 +74,9 @@ function AttendanceStudentAnalytics({ user }) {
         late_count: 0
     };
 
-    const availableBatches = analytics?.available_batches || [];
-    const courseWise = analytics?.course_wise || [];
-    const trend = analytics?.trend || [];
+    const availableBatches = useMemo(() => analytics?.available_batches ?? [], [analytics]);
+    const courseWise = useMemo(() => analytics?.course_wise ?? [], [analytics]);
+    const trend = useMemo(() => analytics?.trend ?? [], [analytics]);
 
     const monthlyConsistency = useMemo(() => {
         const grouped = new Map();

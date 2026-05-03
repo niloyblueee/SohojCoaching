@@ -11,6 +11,8 @@
     "db:migrate:attendance": "node src/scripts/migrateAttendanceAnalytics.js",
     "db:migrate:fees": "node src/scripts/migrateFeeDues.js",
     "db:migrate:quiz": "node src/scripts/migrateQuizCreation.js",
+    "db:migrate:quiz-submission": "node src/scripts/migrateQuizSubmission.js",
+    "db:migrate:quiz-entry-close-time": "node src/scripts/migrateQuizEntryCloseTime.js",
     "db:seed:management": "node src/scripts/seedManagementTestData.js",
     "db:seed:attendance": "node src/scripts/seedAttendanceAnalyticsData.js",
     "db:seed:fees": "node src/scripts/seedFeeMetricsData.js",

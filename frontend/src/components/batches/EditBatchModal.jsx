@@ -1,45 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
 function EditBatchModal({ open, teachers, batch, onClose, onSubmit }) {
-    const [form, setForm] = useState({
-        batch_name: '',
-        subject: '',
-        schedule: '',
-        monthly_fee: '',
-        discounted_fee: '',
-        batch_duration: '',
-        description: '',
-        weekly_routine: [{ day: '', subject: '', time: '' }],
-        teacher_id: ''
+    const buildFormFromBatch = (targetBatch) => ({
+        batch_name: targetBatch?.batch_name || '',
+        subject: targetBatch?.subject || '',
+        schedule: targetBatch?.schedule || '',
+        monthly_fee: String(targetBatch?.monthly_fee ?? ''),
+        discounted_fee:
+            targetBatch?.discounted_fee === null || targetBatch?.discounted_fee === undefined
+                ? ''
+                : String(targetBatch.discounted_fee),
+        batch_duration: targetBatch?.batch_duration || '',
+        description: targetBatch?.description || '',
+        weekly_routine:
+            Array.isArray(targetBatch?.weekly_routine) && targetBatch.weekly_routine.length
+                ? targetBatch.weekly_routine.map((entry) => ({
+                    day: entry.day || '',
+                    subject: entry.subject || '',
+                    time: entry.time || ''
+                }))
+                : [{ day: '', subject: '', time: '' }],
+        teacher_id: targetBatch?.teacher_id || ''
     });
-    const [error, setError] = useState('');
 
-    useEffect(() => {
-        if (!batch) return;
-        setForm({
-            batch_name: batch.batch_name || '',
-            subject: batch.subject || '',
-            schedule: batch.schedule || '',
-            monthly_fee: String(batch.monthly_fee ?? ''),
-            discounted_fee:
-                batch.discounted_fee === null || batch.discounted_fee === undefined
-                    ? ''
-                    : String(batch.discounted_fee),
-            batch_duration: batch.batch_duration || '',
-            description: batch.description || '',
-            weekly_routine:
-                Array.isArray(batch.weekly_routine) && batch.weekly_routine.length
-                    ? batch.weekly_routine.map((entry) => ({
-                        day: entry.day || '',
-                        subject: entry.subject || '',
-                        time: entry.time || ''
-                    }))
-                    : [{ day: '', subject: '', time: '' }],
-            teacher_id: batch.teacher_id || ''
-        });
-    }, [batch]);
+    const [form, setForm] = useState(() => buildFormFromBatch(batch));
+    const [error, setError] = useState('');
 
     if (!open || !batch) return null;
 
