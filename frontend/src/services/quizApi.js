@@ -13,6 +13,16 @@ export const getTeacherQuizScripts = ({ batchId, quizId } = {}) => {
     return apiFetch(`/teacher/quiz-scripts${query}`, { withAuth: true });
 };
 
+export const getTeacherQuizAttemptReview = (attemptId) =>
+    apiFetch(`/teacher/quiz-attempts/${encodeURIComponent(attemptId)}/review`, { withAuth: true });
+
+export const saveTeacherQuizAttemptReview = (attemptId, reviews) =>
+    apiFetch(`/teacher/quiz-attempts/${encodeURIComponent(attemptId)}/review`, {
+        method: 'POST',
+        body: { reviews },
+        withAuth: true
+    });
+
 export const createTeacherQuiz = (payload) =>
     apiFetch('/teacher/quizzes', {
         method: 'POST',

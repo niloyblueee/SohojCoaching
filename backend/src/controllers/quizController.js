@@ -2,8 +2,10 @@ import {
     createQuiz,
     getStudentQuizAttempt,
     getStudentQuizzes,
+    getTeacherQuizAttemptReview,
     getTeacherQuizScripts,
     getTeacherQuizzes,
+    saveTeacherQuizAttemptReview,
     startQuizAttempt,
     submitQuizAttempt
 } from '../services/quizService.js';
@@ -86,6 +88,35 @@ export const startStudentQuizAttemptController = (prisma) => async (req, res) =>
     } catch (error) {
         const statusCode = error.statusCode || 500;
         return res.status(statusCode).json({ error: error.message || 'Failed to start quiz attempt.' });
+    }
+};
+
+export const getTeacherQuizAttemptReviewController = (prisma) => async (req, res) => {
+    try {
+        const payload = await getTeacherQuizAttemptReview(prisma, {
+            requesterId: req.auth?.sub,
+            requesterRole: req.auth?.role,
+            attemptId: req.params?.attemptId
+        });
+        return res.json(payload);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({ error: error.message || 'Failed to load quiz script review.' });
+    }
+};
+
+export const saveTeacherQuizAttemptReviewController = (prisma) => async (req, res) => {
+    try {
+        const payload = await saveTeacherQuizAttemptReview(prisma, {
+            requesterId: req.auth?.sub,
+            requesterRole: req.auth?.role,
+            attemptId: req.params?.attemptId,
+            reviews: req.body?.reviews
+        });
+        return res.json(payload);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({ error: error.message || 'Failed to save quiz script review.' });
     }
 };
 

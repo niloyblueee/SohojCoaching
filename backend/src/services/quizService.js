@@ -22,13 +22,20 @@ const ATTEMPT_STATUS = {
     EXPIRED: 'expired'
 };
 
+const ATTEMPT_GRADING_STATUS = {
+    PENDING: 'pending',
+    GRADED: 'graded'
+};
+
 const MAX_QUIZ_TITLE_LENGTH = 180;
 const MAX_QUIZ_DESCRIPTION_LENGTH = 3000;
 const MAX_QUESTION_TEXT_LENGTH = 4000;
 const MAX_IMAGE_DATA_LENGTH = 1_500_000;
 const MAX_QUESTIONS_PER_QUIZ = 60;
 const MAX_BROAD_ANSWER_TEXT_LENGTH = 6000;
-const MAX_ANSWER_FILE_DATA_LENGTH = 7_000_000;
+const MAX_ANSWER_FILE_DATA_LENGTH = 18_000_000;
+const MAX_REVIEW_FILE_DATA_LENGTH = 18_000_000;
+const MAX_TEACHER_EXPLANATION_LENGTH = 4000;
 
 const normalizeString = (value) => String(value || '').trim();
 
@@ -78,6 +85,24 @@ const validateAnswerFileData = (value) => {
     }
     if (normalized.length > MAX_ANSWER_FILE_DATA_LENGTH) {
         const error = new Error('Answer file exceeds maximum allowed size.');
+        error.statusCode = 400;
+        throw error;
+    }
+    return normalized;
+};
+
+const validateReviewFileData = (value) => {
+    if (value === undefined || value === null || value === '') return null;
+    const normalized = String(value);
+    const isAllowedPrefix =
+        normalized.startsWith('data:image/') || normalized.startsWith('data:application/pdf');
+    if (!isAllowedPrefix) {
+        const error = new Error('Review file must be image or PDF data URL.');
+        error.statusCode = 400;
+        throw error;
+    }
+    if (normalized.length > MAX_REVIEW_FILE_DATA_LENGTH) {
+        const error = new Error('Review file exceeds maximum allowed size.');
         error.statusCode = 400;
         throw error;
     }
@@ -175,14 +200,29 @@ const mapAttemptResponse = (attempt) => {
                     broad_text_answer: answer.broadTextAnswer || '',
                     answer_file_data: answer.answerFileData || null,
                     answer_file_name: answer.answerFileName || null,
-                    answer_file_type: answer.answerFileType || null
+                    answer_file_type: answer.answerFileType || null,
+                    awarded_marks:
+                        answer.awardedMarks === null || answer.awardedMarks === undefined
+                            ? null
+                            : Number(answer.awardedMarks),
+                    teacher_explanation: answer.teacherExplanation || '',
+                    review_file_data: answer.reviewFileData || null,
+                    review_file_name: answer.reviewFileName || null,
+                    review_file_type: answer.reviewFileType || null,
+                    reviewed_at: toISOStringOrNull(answer.reviewedAt)
                 }
                 : {
                     selected_option_index: null,
                     broad_text_answer: '',
                     answer_file_data: null,
                     answer_file_name: null,
-                    answer_file_type: null
+                    answer_file_type: null,
+                    awarded_marks: null,
+                    teacher_explanation: '',
+                    review_file_data: null,
+                    review_file_name: null,
+                    review_file_type: null,
+                    reviewed_at: null
                 }
         };
     });
@@ -193,8 +233,11 @@ const mapAttemptResponse = (attempt) => {
         student_id: attempt.studentId,
         attempt_number: Number(attempt.attemptNumber || 0),
         status: attempt.status,
+        grading_status: attempt.gradingStatus || ATTEMPT_GRADING_STATUS.PENDING,
+        total_awarded_marks: Number(attempt.totalAwardedMarks || 0),
         started_at: toISOStringOrNull(attempt.startedAt),
         submitted_at: toISOStringOrNull(attempt.submittedAt),
+        graded_at: toISOStringOrNull(attempt.gradedAt),
         duration_minutes: Number(attempt.durationMinutes || 0),
         deadline_at: deadlineAt.toISOString(),
         remaining_seconds: remainingSeconds,
@@ -659,136 +702,357 @@ export const getTeacherQuizScripts = async (
         }
     }
 
-    const answers = await prisma.quizAnswer.findMany({
+    const quizzes = await prisma.quiz.findMany({
         where: {
-            answerFileData: {
-                not: null
-            },
-            attempt: {
-                quiz: {
-                    id: normalizedQuizId || undefined,
-                    batchId: normalizedBatchId || { in: scopedBatchIds }
-                }
-            }
+            id: normalizedQuizId || undefined,
+            batchId: normalizedBatchId || { in: scopedBatchIds }
         },
         include: {
-            question: {
+            batch: {
                 select: {
                     id: true,
-                    orderNo: true,
-                    questionType: true,
-                    questionText: true,
-                    questionImageData: true,
+                    name: true,
+                    batchName: true
+                }
+            },
+            questions: {
+                select: {
+                    id: true,
                     marks: true
                 }
             },
-            attempt: {
-                select: {
-                    id: true,
-                    attemptNumber: true,
-                    status: true,
-                    startedAt: true,
-                    submittedAt: true,
+            attempts: {
+                where: {
+                    status: ATTEMPT_STATUS.SUBMITTED
+                },
+                include: {
                     student: {
                         select: {
                             id: true,
                             name: true,
                             email: true
                         }
-                    },
-                    quiz: {
-                        select: {
-                            id: true,
-                            title: true,
-                            batch: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    batchName: true
-                                }
-                            }
-                        }
                     }
+                },
+                orderBy: {
+                    submittedAt: 'desc'
                 }
             }
         },
         orderBy: {
-            updatedAt: 'desc'
+            createdAt: 'desc'
         }
     });
 
-    const byQuiz = new Map();
+    return quizzes.map((quiz) => {
+        const totalMarks = (quiz.questions || []).reduce((sum, question) => sum + Number(question.marks || 0), 0);
 
-    for (const answer of answers) {
-        const quiz = answer.attempt.quiz;
-        const batch = quiz.batch;
-        const student = answer.attempt.student;
+        return {
+            quiz_id: quiz.id,
+            quiz_title: quiz.title,
+            batch_id: quiz.batchId,
+            batch_name: quiz.batch?.batchName || quiz.batch?.name || null,
+            question_count: Number((quiz.questions || []).length),
+            total_marks: totalMarks,
+            submission_count: Number((quiz.attempts || []).length),
+            attempts: (quiz.attempts || []).map((attempt) => ({
+                attempt_id: attempt.id,
+                attempt_number: Number(attempt.attemptNumber || 0),
+                attempt_status: attempt.status,
+                grading_status: attempt.gradingStatus || ATTEMPT_GRADING_STATUS.PENDING,
+                total_awarded_marks: Number(attempt.totalAwardedMarks || 0),
+                submitted_at: toISOStringOrNull(attempt.submittedAt),
+                graded_at: toISOStringOrNull(attempt.gradedAt),
+                student_id: attempt.student?.id || null,
+                student_name: attempt.student?.name || null,
+                student_email: attempt.student?.email || null
+            }))
+        };
+    });
+};
 
-        if (!byQuiz.has(quiz.id)) {
-            byQuiz.set(quiz.id, {
-                quiz_id: quiz.id,
-                quiz_title: quiz.title,
-                batch_id: batch.id,
-                batch_name: batch.batchName || batch.name || null,
-                script_count: 0,
-                student_groups: []
-            });
-        }
-
-        const quizGroup = byQuiz.get(quiz.id);
-        let studentGroup = quizGroup.student_groups.find((entry) => entry.student_id === student.id);
-        if (!studentGroup) {
-            studentGroup = {
-                student_id: student.id,
-                student_name: student.name,
-                student_email: student.email,
-                attempts: []
-            };
-            quizGroup.student_groups.push(studentGroup);
-        }
-
-        let attemptGroup = studentGroup.attempts.find((entry) => entry.attempt_id === answer.attempt.id);
-        if (!attemptGroup) {
-            attemptGroup = {
-                attempt_id: answer.attempt.id,
-                attempt_number: Number(answer.attempt.attemptNumber || 0),
-                attempt_status: answer.attempt.status,
-                started_at: toISOStringOrNull(answer.attempt.startedAt),
-                submitted_at: toISOStringOrNull(answer.attempt.submittedAt),
-                files: []
-            };
-            studentGroup.attempts.push(attemptGroup);
-        }
-
-        attemptGroup.files.push({
-            answer_id: answer.id,
-            question_id: answer.questionId,
-            question_order_no: Number(answer.question.orderNo || 0),
-            question_type: answer.question.questionType,
-            question_text: answer.question.questionText || '',
-            question_image_data: answer.question.questionImageData || null,
-            marks: Number(answer.question.marks || 0),
-            answer_file_data: answer.answerFileData || null,
-            answer_file_name: answer.answerFileName || null,
-            answer_file_type: answer.answerFileType || null,
-            updated_at: toISOStringOrNull(answer.updatedAt)
-        });
-
-        quizGroup.script_count += 1;
+const getTeacherScopedAttempt = async (prisma, requesterId, requesterRole, attemptId) => {
+    if (!isUuid(attemptId)) {
+        const error = new Error('attempt_id must be a valid UUID.');
+        error.statusCode = 400;
+        throw error;
     }
 
-    const grouped = Array.from(byQuiz.values());
-    grouped.forEach((quizGroup) => {
-        quizGroup.student_groups.forEach((studentGroup) => {
-            studentGroup.attempts.sort((a, b) => b.attempt_number - a.attempt_number);
-            studentGroup.attempts.forEach((attempt) => {
-                attempt.files.sort((a, b) => a.question_order_no - b.question_order_no);
-            });
-        });
-        quizGroup.student_groups.sort((a, b) => a.student_name.localeCompare(b.student_name));
+    const scopedBatchIds = await getAccessibleTeacherBatchIds(prisma, requesterId, requesterRole);
+    if (!scopedBatchIds.length) {
+        const error = new Error('You do not have access to this attempt.');
+        error.statusCode = 403;
+        throw error;
+    }
+
+    const attempt = await prisma.quizAttempt.findFirst({
+        where: {
+            id: attemptId,
+            quiz: {
+                batchId: { in: scopedBatchIds }
+            }
+        },
+        include: {
+            student: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true
+                }
+            },
+            quiz: {
+                include: {
+                    batch: {
+                        select: {
+                            id: true,
+                            name: true,
+                            batchName: true
+                        }
+                    },
+                    questions: {
+                        orderBy: { orderNo: 'asc' }
+                    }
+                }
+            },
+            answers: true
+        }
     });
 
-    return grouped;
+    if (!attempt) {
+        const error = new Error('Quiz attempt not found.');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    return attempt;
+};
+
+export const getTeacherQuizAttemptReview = async (
+    prisma,
+    {
+        requesterId,
+        requesterRole,
+        attemptId
+    }
+) => {
+    if (!isUuid(requesterId)) {
+        const error = new Error('Unable to resolve requester identity.');
+        error.statusCode = 401;
+        throw error;
+    }
+
+    const attempt = await getTeacherScopedAttempt(prisma, requesterId, requesterRole, attemptId);
+    if (attempt.status !== ATTEMPT_STATUS.SUBMITTED) {
+        const error = new Error('Only submitted quiz attempts can be reviewed.');
+        error.statusCode = 400;
+        throw error;
+    }
+    const answerByQuestionId = new Map((attempt.answers || []).map((answer) => [answer.questionId, answer]));
+
+    const questions = (attempt.quiz?.questions || []).map((question) => {
+        const answer = answerByQuestionId.get(question.id) || null;
+        const options = Array.isArray(question.mcqOptions) ? question.mcqOptions : [];
+
+        return {
+            id: question.id,
+            order_no: Number(question.orderNo || 0),
+            type: question.questionType,
+            question_text: question.questionText || '',
+            question_image_data: question.questionImageData || null,
+            marks: Number(question.marks || 0),
+            options,
+            correct_option_index:
+                question.correctOptionIndex === null || question.correctOptionIndex === undefined
+                    ? null
+                    : Number(question.correctOptionIndex),
+            allow_file_upload: Boolean(question.allowFileUpload),
+            answer: {
+                selected_option_index:
+                    answer?.mcqSelectedOptionIndex === null || answer?.mcqSelectedOptionIndex === undefined
+                        ? null
+                        : Number(answer.mcqSelectedOptionIndex),
+                broad_text_answer: answer?.broadTextAnswer || '',
+                answer_file_data: answer?.answerFileData || null,
+                answer_file_name: answer?.answerFileName || null,
+                answer_file_type: answer?.answerFileType || null
+            },
+            review: {
+                awarded_marks:
+                    answer?.awardedMarks === null || answer?.awardedMarks === undefined
+                        ? null
+                        : Number(answer.awardedMarks),
+                teacher_explanation: answer?.teacherExplanation || '',
+                review_file_data: answer?.reviewFileData || null,
+                review_file_name: answer?.reviewFileName || null,
+                review_file_type: answer?.reviewFileType || null,
+                reviewed_at: toISOStringOrNull(answer?.reviewedAt)
+            }
+        };
+    });
+
+    const totalMarks = questions.reduce((sum, question) => sum + Number(question.marks || 0), 0);
+
+    return {
+        attempt_id: attempt.id,
+        attempt_number: Number(attempt.attemptNumber || 0),
+        attempt_status: attempt.status,
+        grading_status: attempt.gradingStatus || ATTEMPT_GRADING_STATUS.PENDING,
+        total_awarded_marks: Number(attempt.totalAwardedMarks || 0),
+        submitted_at: toISOStringOrNull(attempt.submittedAt),
+        graded_at: toISOStringOrNull(attempt.gradedAt),
+        quiz: {
+            id: attempt.quiz.id,
+            title: attempt.quiz.title,
+            description: attempt.quiz.description || '',
+            batch_id: attempt.quiz.batchId,
+            batch_name: attempt.quiz.batch?.batchName || attempt.quiz.batch?.name || null,
+            total_marks: totalMarks
+        },
+        student: {
+            id: attempt.student?.id || null,
+            name: attempt.student?.name || null,
+            email: attempt.student?.email || null
+        },
+        questions
+    };
+};
+
+export const saveTeacherQuizAttemptReview = async (
+    prisma,
+    {
+        requesterId,
+        requesterRole,
+        attemptId,
+        reviews
+    }
+) => {
+    if (!isUuid(requesterId)) {
+        const error = new Error('Unable to resolve requester identity.');
+        error.statusCode = 401;
+        throw error;
+    }
+    if (!Array.isArray(reviews) || reviews.length === 0) {
+        const error = new Error('reviews must be a non-empty array.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const attempt = await getTeacherScopedAttempt(prisma, requesterId, requesterRole, attemptId);
+    if (attempt.status !== ATTEMPT_STATUS.SUBMITTED) {
+        const error = new Error('Only submitted quiz attempts can be reviewed.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const questionById = new Map((attempt.quiz?.questions || []).map((question) => [question.id, question]));
+    const existingAnswersByQuestionId = new Map((attempt.answers || []).map((answer) => [answer.questionId, answer]));
+    const normalizedByQuestionId = new Map();
+
+    for (const rawReview of reviews) {
+        const questionId = normalizeString(rawReview?.question_id);
+        if (!isUuid(questionId) || !questionById.has(questionId)) {
+            const error = new Error('reviews contains invalid question_id.');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const question = questionById.get(questionId);
+        const awardedMarks = toSafeInt(rawReview?.awarded_marks, -1);
+        if (awardedMarks < 0 || awardedMarks > Number(question.marks || 0)) {
+            const error = new Error(`awarded_marks for question ${question.orderNo} must be between 0 and ${question.marks}.`);
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const teacherExplanation = normalizeString(rawReview?.teacher_explanation);
+        if (teacherExplanation.length > MAX_TEACHER_EXPLANATION_LENGTH) {
+            const error = new Error(`teacher_explanation too long for question ${question.orderNo}.`);
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const reviewFileData = validateReviewFileData(rawReview?.review_file_data);
+        const reviewFileName = normalizeString(rawReview?.review_file_name);
+        const reviewFileType = normalizeString(rawReview?.review_file_type);
+
+        normalizedByQuestionId.set(questionId, {
+            awardedMarks,
+            teacherExplanation: teacherExplanation || null,
+            reviewFileData,
+            reviewFileName: reviewFileName ? reviewFileName.slice(0, 255) : null,
+            reviewFileType: reviewFileType ? reviewFileType.slice(0, 120) : null
+        });
+    }
+
+    const now = new Date();
+    let totalAwardedMarks = 0;
+
+    await prisma.$transaction(async (tx) => {
+        for (const question of attempt.quiz.questions || []) {
+            const review = normalizedByQuestionId.get(question.id) || {
+                awardedMarks: 0,
+                teacherExplanation: null,
+                reviewFileData: null,
+                reviewFileName: null,
+                reviewFileType: null
+            };
+
+            totalAwardedMarks += Number(review.awardedMarks || 0);
+
+            const existingAnswer = existingAnswersByQuestionId.get(question.id) || null;
+            await tx.quizAnswer.upsert({
+                where: {
+                    attemptId_questionId: {
+                        attemptId: attempt.id,
+                        questionId: question.id
+                    }
+                },
+                create: {
+                    attemptId: attempt.id,
+                    questionId: question.id,
+                    mcqSelectedOptionIndex: existingAnswer?.mcqSelectedOptionIndex ?? null,
+                    broadTextAnswer: existingAnswer?.broadTextAnswer ?? null,
+                    answerFileData: existingAnswer?.answerFileData ?? null,
+                    answerFileName: existingAnswer?.answerFileName ?? null,
+                    answerFileType: existingAnswer?.answerFileType ?? null,
+                    awardedMarks: review.awardedMarks,
+                    teacherExplanation: review.teacherExplanation,
+                    reviewFileData: review.reviewFileData,
+                    reviewFileName: review.reviewFileName,
+                    reviewFileType: review.reviewFileType,
+                    reviewedBy: requesterId,
+                    reviewedAt: now
+                },
+                update: {
+                    awardedMarks: review.awardedMarks,
+                    teacherExplanation: review.teacherExplanation,
+                    reviewFileData: review.reviewFileData,
+                    reviewFileName: review.reviewFileName,
+                    reviewFileType: review.reviewFileType,
+                    reviewedBy: requesterId,
+                    reviewedAt: now
+                }
+            });
+        }
+
+        await tx.quizAttempt.update({
+            where: { id: attempt.id },
+            data: {
+                gradingStatus: ATTEMPT_GRADING_STATUS.GRADED,
+                totalAwardedMarks,
+                gradedBy: requesterId,
+                gradedAt: now
+            }
+        });
+    });
+
+    return {
+        message: 'Quiz evaluation saved successfully.',
+        attempt_id: attempt.id,
+        grading_status: ATTEMPT_GRADING_STATUS.GRADED,
+        total_awarded_marks: totalAwardedMarks,
+        graded_at: now.toISOString()
+    };
 };
 
 export const getStudentQuizzes = async (
@@ -1195,7 +1459,11 @@ export const submitQuizAttempt = async (
             where: { id: attempt.id },
             data: {
                 status: ATTEMPT_STATUS.SUBMITTED,
-                submittedAt: new Date()
+                submittedAt: new Date(),
+                gradingStatus: ATTEMPT_GRADING_STATUS.PENDING,
+                totalAwardedMarks: 0,
+                gradedBy: null,
+                gradedAt: null
             }
         });
     });

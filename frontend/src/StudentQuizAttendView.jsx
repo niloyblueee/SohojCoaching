@@ -139,6 +139,14 @@ function StudentQuizAttendView({ currentUser }) {
               ))}
             </select>
           </label>
+          <button
+            type="button"
+            className="quiz-btn ghost"
+            onClick={() => loadQuizzes(selectedBatch)}
+            disabled={loading}
+          >
+            {loading ? 'Refreshing...' : 'Refresh Quizzes'}
+          </button>
         </div>
 
         {loading && <p className="quiz-empty">Loading quizzes...</p>}

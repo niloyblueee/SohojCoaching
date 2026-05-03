@@ -258,6 +258,10 @@ model QuizAttempt {
   studentId       String      @map("student_id") @db.Uuid
   attemptNumber   Int         @map("attempt_number")
   status          String      @db.VarChar(20)
+  gradingStatus   String      @default("pending") @map("grading_status") @db.VarChar(20)
+  totalAwardedMarks Int       @default(0) @map("total_awarded_marks")
+  gradedBy        String?     @map("graded_by") @db.Uuid
+  gradedAt        DateTime?   @map("graded_at")
   startedAt       DateTime    @default(now()) @map("started_at")
   submittedAt     DateTime?   @map("submitted_at")
   durationMinutes Int         @map("duration_minutes")
@@ -270,6 +274,7 @@ model QuizAttempt {
   @@index([quizId])
   @@index([studentId])
   @@index([status])
+  @@index([gradingStatus])
   @@unique([quizId, studentId, attemptNumber])
   @@map("quiz_attempts")
 }
@@ -283,6 +288,13 @@ model QuizAnswer {
   answerFileData         String?     @map("answer_file_data")
   answerFileName         String?     @map("answer_file_name") @db.VarChar(255)
   answerFileType         String?     @map("answer_file_type") @db.VarChar(120)
+  awardedMarks           Int?        @map("awarded_marks")
+  teacherExplanation     String?     @map("teacher_explanation")
+  reviewFileData         String?     @map("review_file_data")
+  reviewFileName         String?     @map("review_file_name") @db.VarChar(255)
+  reviewFileType         String?     @map("review_file_type") @db.VarChar(120)
+  reviewedBy             String?     @map("reviewed_by") @db.Uuid
+  reviewedAt             DateTime?   @map("reviewed_at")
   createdAt              DateTime    @default(now()) @map("created_at")
   updatedAt              DateTime    @updatedAt @map("updated_at")
   attempt                QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
