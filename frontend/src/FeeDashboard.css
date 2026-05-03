@@ -3,6 +3,14 @@
     margin: 0 auto;
     padding: 0.6rem;
     font-family: 'Nunito', sans-serif;
+    --fee-surface: rgba(255, 255, 255, 0.92);
+    --fee-ink: #1f2e4d;
+    --fee-ink-soft: #3d598d;
+    --fee-accent: #2d3b7f;
+    --fee-accent-2: #3a79c1;
+    --fee-success: #1f9e79;
+    --fee-danger: #e0556f;
+    --fee-outline: #c9d8f5;
 }
 
 .fee-shell-admin {
@@ -99,6 +107,35 @@
     color: #8f2842;
     border-color: #efbdd0;
     background: rgba(255, 250, 252, 0.82);
+}
+
+.fee-segmented {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0.35rem;
+    border-radius: 12px;
+    border: 1px solid #d4e0f8;
+    background: linear-gradient(120deg, rgba(233, 241, 255, 0.8), rgba(255, 255, 255, 0.9));
+    margin: 0.8rem 0 1rem;
+}
+
+.fee-segment-btn {
+    border: 0;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    color: #2c4e8f;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fee-segment-btn[data-active='true'] {
+    background: #ffffff;
+    color: #1f3f7b;
+    box-shadow: 0 8px 16px rgba(35, 63, 123, 0.2);
 }
 
 .fee-stat-grid {
@@ -232,6 +269,265 @@
     color: #25437f;
 }
 
+.fee-panel {
+    border: 1px solid var(--fee-outline);
+    border-radius: 12px;
+    background: var(--fee-surface);
+    box-shadow: 0 10px 22px rgba(24, 45, 90, 0.12);
+    padding: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.fee-panel-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+}
+
+.fee-panel-header h3 {
+    margin: 0.3rem 0 0.4rem;
+    color: #203c73;
+    font-family: 'Chakra Petch', sans-serif;
+}
+
+.fee-panel-header p {
+    margin: 0;
+    color: var(--fee-ink-soft);
+    max-width: 65ch;
+}
+
+.fee-panel-stat {
+    min-width: 220px;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    color: #ffffff;
+    background: linear-gradient(125deg, #3b77bd, #2f4f95);
+    box-shadow: 0 10px 18px rgba(41, 77, 150, 0.22);
+    text-align: right;
+}
+
+.fee-panel-stat span {
+    display: block;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+}
+
+.fee-panel-stat strong {
+    font-size: 1.25rem;
+    font-family: 'Chakra Petch', sans-serif;
+}
+
+.fee-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+}
+
+.fee-breakdown-card {
+    border-radius: 12px;
+    border: 1px solid #cbdaf3;
+    background: #ffffff;
+    padding: 0.7rem;
+}
+
+.fee-breakdown-card h4 {
+    margin: 0 0 0.6rem;
+    color: #243f76;
+}
+
+.fee-breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fee-breakdown-table th,
+.fee-breakdown-table td {
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid #dee6f7;
+    text-align: left;
+    font-size: 0.85rem;
+}
+
+.fee-breakdown-table th {
+    text-transform: uppercase;
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    color: #2b56a0;
+    background: #f2f6ff;
+}
+
+.fee-income-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.fee-income-card {
+    border-radius: 12px;
+    padding: 0.8rem;
+    color: #ffffff;
+    background: linear-gradient(125deg, #1f3f7b, #3a79c1);
+    box-shadow: 0 12px 20px rgba(31, 63, 123, 0.22);
+}
+
+.fee-income-card-secondary {
+    background: linear-gradient(125deg, #1f9e79, #2fb090);
+}
+
+.fee-income-card p {
+    margin: 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.85;
+}
+
+.fee-income-card strong {
+    display: block;
+    margin-top: 0.45rem;
+    font-size: 1.3rem;
+    font-family: 'Chakra Petch', sans-serif;
+}
+
+.fee-income-card span {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.82rem;
+    opacity: 0.85;
+}
+
+.fee-income-pie-card {
+    border-radius: 12px;
+    padding: 0.8rem;
+    background: #f5f8ff;
+    border: 1px solid #d7e2f8;
+    display: grid;
+    gap: 0.6rem;
+    align-content: center;
+    justify-items: center;
+}
+
+.fee-pie {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    position: relative;
+}
+
+.fee-pie::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    background: #f5f8ff;
+}
+
+.fee-pie > div {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: #203b70;
+}
+
+.fee-pie strong {
+    display: block;
+    font-size: 1.2rem;
+}
+
+.fee-pie span {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.fee-pie-legend {
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    color: #2d466d;
+}
+
+.fee-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 0.4rem;
+}
+
+.fee-dot-collected {
+    background: #1f9e79;
+}
+
+.fee-dot-pending {
+    background: #e0556f;
+}
+
+.fee-income-chart-card {
+    border-radius: 12px;
+    border: 1px solid #d5e1f9;
+    padding: 0.8rem;
+    background: #ffffff;
+}
+
+.fee-income-chart-header {
+    font-weight: 700;
+    color: #1f3f7b;
+    margin-bottom: 0.7rem;
+}
+
+.fee-income-chart {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.45rem;
+    align-items: end;
+    min-height: 200px;
+}
+
+.fee-income-bar {
+    display: grid;
+    gap: 0.4rem;
+    justify-items: center;
+    height: 100%;
+}
+
+.fee-income-bar-track {
+    height: 160px;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+}
+
+.fee-income-bar-fill {
+    width: 100%;
+    border-radius: 999px 999px 8px 8px;
+    background: linear-gradient(180deg, #3a79c1, #2d3b7f);
+    box-shadow: 0 8px 14px rgba(45, 59, 127, 0.3);
+    min-height: 6px;
+}
+
+.fee-income-bar span {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #3d5689;
+}
+
+.fee-income-bar em {
+    font-size: 0.72rem;
+    color: #24457f;
+    font-style: normal;
+}
+
 .fee-detail-table-wrap {
     overflow: auto;
 }
@@ -328,6 +624,12 @@
     padding: 1rem;
 }
 
+.fee-modal-wide {
+    width: min(760px, 96vw);
+    max-height: 85vh;
+    overflow: auto;
+}
+
 .fee-modal h3 {
     margin: 0;
     color: #24457f;
@@ -387,6 +689,24 @@
 
     .fee-stat-grid {
         grid-template-columns: 1fr;
+    }
+
+    .fee-panel-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fee-breakdown-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fee-income-chart {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        min-height: 220px;
+    }
+
+    .fee-income-bar-track {
+        height: 140px;
     }
 
     .fee-table th,

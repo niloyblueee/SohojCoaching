@@ -5,6 +5,10 @@ const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('en-US', {
     year: 'numeric'
 });
 
+const MONTH_SHORT_FORMATTER = new Intl.DateTimeFormat('en-US', {
+    month: 'short'
+});
+
 const toMonthStart = (value = new Date()) =>
     new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), 1));
 
@@ -23,10 +27,41 @@ const parseDurationMonths = (rawDuration) => {
     return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
 };
 
-const toAmount = (value) => {
-    const parsed = Number(value ?? 0);
-    if (!Number.isFinite(parsed)) return 0;
-    return Math.round(parsed);
+const toNumberValue = (value) => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'bigint') return Number(value);
+    if (typeof value === 'object' && typeof value.toNumber === 'function') return value.toNumber();
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const toAmount = (value) => Math.round(toNumberValue(value));
+
+const buildMonthlyIncomeSeries = (year, rows = []) => {
+    const buckets = [];
+    const bucketByMonth = new Map();
+
+    for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
+        const monthNumber = monthIndex + 1;
+        const labelDate = new Date(Date.UTC(year, monthIndex, 1));
+        const bucket = {
+            month: monthNumber,
+            label: MONTH_SHORT_FORMATTER.format(labelDate),
+            total_paid: 0
+        };
+        buckets.push(bucket);
+        bucketByMonth.set(monthNumber, bucket);
+    }
+
+    for (const row of rows) {
+        const monthNumber = toNumberValue(row.month);
+        if (!Number.isFinite(monthNumber)) continue;
+        const bucket = bucketByMonth.get(monthNumber);
+        if (!bucket) continue;
+        bucket.total_paid = toAmount(row.total_paid);
+    }
+
+    return buckets;
 };
 
 const resolveEffectiveFee = (batch) => {
@@ -252,6 +287,44 @@ export const getAdminFeeDashboard = async (prisma) => {
     const currentMonthCollectionRate =
         currentMonthPayable > 0 ? Number(((currentMonthPaid / currentMonthPayable) * 100).toFixed(2)) : 0;
 
+    const currentMonthStart = toMonthStart(new Date());
+    const nextMonthStart = addMonths(currentMonthStart, 1);
+    const currentYear = currentMonthStart.getUTCFullYear();
+    const yearStart = new Date(Date.UTC(currentYear, 0, 1));
+    const yearEnd = new Date(Date.UTC(currentYear + 1, 0, 1));
+
+    const [incomeRows, expectedRows, realizedRows] = await Promise.all([
+        prisma.$queryRaw`
+            SELECT
+                EXTRACT(MONTH FROM fp.payment_date) AS month,
+                COALESCE(SUM(fp.amount_paid), 0) AS total_paid
+            FROM fee_payments fp
+            WHERE fp.payment_date >= ${yearStart}
+              AND fp.payment_date < ${yearEnd}
+            GROUP BY month
+            ORDER BY month
+        `,
+        prisma.$queryRaw`
+            SELECT
+                COALESCE(SUM(COALESCE(b.discounted_fee, b.monthly_fee)), 0) AS expected_total,
+                COUNT(*) AS enrollment_count
+            FROM enrollments e
+            JOIN batches b ON b.id = e.batch_id
+            WHERE LOWER(e.status::text) = 'active'
+        `,
+        prisma.$queryRaw`
+            SELECT COALESCE(SUM(fp.amount_paid), 0) AS realized_total
+            FROM fee_payments fp
+            WHERE fp.payment_date >= ${currentMonthStart}
+              AND fp.payment_date < ${nextMonthStart}
+        `
+    ]);
+
+    const expectedTotal = toAmount(expectedRows?.[0]?.expected_total);
+    const realizedTotal = toAmount(realizedRows?.[0]?.realized_total);
+    const pendingTotal = Math.max(expectedTotal - realizedTotal, 0);
+    const monthlyIncome = buildMonthlyIncomeSeries(currentYear, incomeRows);
+
     return {
         generated: generation,
         summary: {
@@ -267,7 +340,22 @@ export const getAdminFeeDashboard = async (prisma) => {
             current_month_paid: currentMonthPaid,
             current_month_collection_rate: currentMonthCollectionRate
         },
-        enrollments: rows
+        enrollments: rows,
+        analytics: {
+            year: currentYear,
+            monthly_income: monthlyIncome,
+            revenue_summary: {
+                expected_total: expectedTotal,
+                realized_total: realizedTotal,
+                pending_total: pendingTotal,
+                active_enrollments: Number(expectedRows?.[0]?.enrollment_count || 0)
+            },
+            current_month: {
+                expected: expectedTotal,
+                collected: realizedTotal,
+                pending: pendingTotal
+            }
+        }
     };
 };
 

@@ -195,7 +195,18 @@ export const createAdminRoutes = (prisma) => {
                         FROM fee_payments fp
                         JOIN enrollments e ON e.id = fp.enrollment_id
                         WHERE e.batch_id = b.id
-                    ) AS fee_total_paid
+                    ) AS fee_total_paid,
+                    (
+                        SELECT COUNT(DISTINCT teacher_id)::int
+                        FROM (
+                            SELECT b.teacher_id AS teacher_id
+                            UNION
+                            SELECT ta.teacher_id
+                            FROM teacher_assignments ta
+                            WHERE ta.batch_id = b.id
+                        ) teachers
+                        WHERE teacher_id IS NOT NULL
+                    ) AS teacher_count
                 FROM batches b
                 ORDER BY batch_name ASC
             `;
@@ -222,7 +233,8 @@ export const createAdminRoutes = (prisma) => {
                     fee_total_paid: feeTotalPaid,
                     fee_collection_rate: feeCollectionRate,
                     total_marks: totalMarks,
-                    attended_marks: attendedMarks
+                    attended_marks: attendedMarks,
+                    teacher_count: Number(row.teacher_count || 0)
                 };
             });
 

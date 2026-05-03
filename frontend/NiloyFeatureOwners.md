@@ -4,7 +4,8 @@ MaterialStudentView Niloy FR 20
 ScriptUploadView Niloy FR 17
 MyScriptsView Niloy FR 18
 Batches Overview FR 5
-
+Due Monitoring FR 8 
+Monthly Income Dashboard + Fee summary  FR 9 + fr 25
 
 =================================================================
 📅 Sprint 1 – Core Academic Structure
@@ -12,25 +13,25 @@ Batches Overview FR 5
 
 👤 Dev C
 
-FR-2: Batch Enrollment Management
+FR-2: Batch Enrollment Management ✅
 
-FR-4: Teacher Assignment to Batches
+FR-4: Teacher Assignment to Batches ✅
 
 
 📅 Sprint 2 – Attendance + Batch Overview
 
 👤 Dev C
 
-FR-5: Batch Overview
+FR-5: Batch Overview ✅
 
 📅 Sprint 3 – Fee Management
 
 
 👤 Dev C
 
-FR-8: Due Monitoring
+FR-8: Due Monitoring ✅
 
-FR-9: Monthly Income Dashboard
+FR-9: Monthly Income Dashboard ✅
 
 (Dashboard is mostly aggregation + UI, pairs well with due highlighting)
 
@@ -41,9 +42,9 @@ FR-9: Monthly Income Dashboard
 
 👤 Dev C
 
-FR-17: Script Upload
+FR-17: Script Upload ✅
 
-FR-18: Student Script Access
+FR-18: Student Script Access ✅
 
 
 
@@ -53,10 +54,10 @@ FR-18: Student Script Access
 
 👤 Dev C
 
-FR-19: Study Material Upload
+FR-19: Study Material Upload ✅
 
-FR-20: Material Download
-
+FR-20: Material Download ✅ 
+ 
 FR-24: Batch-wise Student Count
 
-FR-25: Fee Summary
+FR-25: Fee Summary ✅

@@ -92,6 +92,7 @@ function BatchOverviewPage() {
                             <tr>
                                 <th>Batch</th>
                                 <th>Course</th>
+                                <th>Teachers</th>
                                 <th>Total Students</th>
                                 <th>Attendance Rate</th>
                                 <th>Fee Status</th>
@@ -102,6 +103,7 @@ function BatchOverviewPage() {
                                 <tr key={batch.id}>
                                     <td>{batch.batch_name}</td>
                                     <td>{batch.course}</td>
+                                    <td>{batch.teacher_count ?? 0}</td>
                                     <td>{batch.total_students}</td>
                                     <td>{Number(batch.attendance_rate || 0).toFixed(2)}%</td>
                                     <td>{batch.fee_status || 'No dues yet'}</td>
