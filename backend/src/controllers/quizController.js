@@ -1,5 +1,7 @@
 import {
     createQuiz,
+    getStudentResultDetail,
+    getStudentResults,
     getStudentQuizAttempt,
     getStudentQuizzes,
     getTeacherQuizAttemptReview,
@@ -59,6 +61,34 @@ export const getStudentQuizzesController = (prisma) => async (req, res) => {
     } catch (error) {
         const statusCode = error.statusCode || 500;
         return res.status(statusCode).json({ error: error.message || 'Failed to fetch student quizzes.' });
+    }
+};
+
+export const getStudentResultsController = (prisma) => async (req, res) => {
+    try {
+        const payload = await getStudentResults(prisma, {
+            studentId: req.auth?.sub,
+            batchId: req.query?.batch_id
+        });
+
+        return res.json(payload);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({ error: error.message || 'Failed to load student results.' });
+    }
+};
+
+export const getStudentResultDetailController = (prisma) => async (req, res) => {
+    try {
+        const payload = await getStudentResultDetail(prisma, {
+            studentId: req.auth?.sub,
+            attemptId: req.params?.attemptId
+        });
+
+        return res.json(payload);
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({ error: error.message || 'Failed to load result detail.' });
     }
 };
 

@@ -260,9 +260,9 @@ function TeacherQuizScriptsView() {
       </section>
 
       <section className="quiz-list-panel">
-        <div className="quiz-top-grid">
-          <label>
-            Batch
+        <div className="quiz-filter-bar">
+          <label className="quiz-filter-item">
+            <span>Batch</span>
             <select
               value={selectedBatch}
               onChange={(event) => {
@@ -279,8 +279,8 @@ function TeacherQuizScriptsView() {
             </select>
           </label>
 
-          <label>
-            Quiz (optional)
+          <label className="quiz-filter-item">
+            <span>Quiz (optional)</span>
             <select value={selectedQuiz} onChange={(event) => setSelectedQuiz(event.target.value)}>
               <option value="">All Quizzes</option>
               {quizzes.map((quiz) => (
@@ -291,7 +291,7 @@ function TeacherQuizScriptsView() {
             </select>
           </label>
 
-          <div className="quiz-submit-row quiz-submit-row-left">
+          <div className="quiz-filter-actions">
             <button
               type="button"
               className="quiz-btn ghost"

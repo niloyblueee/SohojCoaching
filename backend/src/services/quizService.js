@@ -1055,6 +1055,212 @@ export const saveTeacherQuizAttemptReview = async (
     };
 };
 
+export const getStudentResults = async (
+    prisma,
+    {
+        studentId,
+        batchId
+    }
+) => {
+    if (!isUuid(studentId)) {
+        const error = new Error('Unable to resolve student identity.');
+        error.statusCode = 401;
+        throw error;
+    }
+
+    const normalizedBatchId = normalizeString(batchId);
+    if (normalizedBatchId && !isUuid(normalizedBatchId)) {
+        const error = new Error('batch_id must be a valid UUID.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const attempts = await prisma.quizAttempt.findMany({
+        where: {
+            studentId,
+            status: ATTEMPT_STATUS.SUBMITTED,
+            gradingStatus: ATTEMPT_GRADING_STATUS.GRADED,
+            quiz: {
+                batchId: normalizedBatchId || undefined
+            }
+        },
+        include: {
+            quiz: {
+                select: {
+                    id: true,
+                    title: true,
+                    batchId: true,
+                    batch: {
+                        select: {
+                            id: true,
+                            name: true,
+                            batchName: true
+                        }
+                    },
+                    questions: {
+                        select: {
+                            id: true,
+                            marks: true
+                        }
+                    }
+                }
+            }
+        },
+        orderBy: {
+            gradedAt: 'desc'
+        }
+    });
+
+    const rows = attempts.map((attempt) => {
+        const fullMarks = (attempt.quiz?.questions || []).reduce((sum, question) => sum + Number(question.marks || 0), 0);
+        const obtainedMarks = Number(attempt.totalAwardedMarks || 0);
+        const percentage = fullMarks > 0 ? Number(((obtainedMarks / fullMarks) * 100).toFixed(2)) : 0;
+
+        return {
+            attempt_id: attempt.id,
+            quiz_id: attempt.quizId,
+            quiz_title: attempt.quiz?.title || 'Quiz',
+            batch_id: attempt.quiz?.batchId || null,
+            batch_name: attempt.quiz?.batch?.batchName || attempt.quiz?.batch?.name || null,
+            attempt_number: Number(attempt.attemptNumber || 0),
+            obtained_marks: obtainedMarks,
+            full_marks: fullMarks,
+            percentage,
+            submitted_at: toISOStringOrNull(attempt.submittedAt),
+            graded_at: toISOStringOrNull(attempt.gradedAt)
+        };
+    });
+
+    const totalObtained = rows.reduce((sum, row) => sum + Number(row.obtained_marks || 0), 0);
+    const totalFullMarks = rows.reduce((sum, row) => sum + Number(row.full_marks || 0), 0);
+    const averagePercentage = rows.length
+        ? Number((rows.reduce((sum, row) => sum + Number(row.percentage || 0), 0) / rows.length).toFixed(2))
+        : 0;
+    const bestRow = rows.reduce((best, row) => (best === null || row.percentage > best.percentage ? row : best), null);
+
+    return {
+        metrics: {
+            graded_quizzes: rows.length,
+            total_obtained_marks: totalObtained,
+            total_full_marks: totalFullMarks,
+            average_percentage: averagePercentage,
+            best_percentage: Number(bestRow?.percentage || 0),
+            best_quiz_title: bestRow?.quiz_title || null
+        },
+        results: rows
+    };
+};
+
+export const getStudentResultDetail = async (
+    prisma,
+    {
+        studentId,
+        attemptId
+    }
+) => {
+    if (!isUuid(studentId)) {
+        const error = new Error('Unable to resolve student identity.');
+        error.statusCode = 401;
+        throw error;
+    }
+    if (!isUuid(attemptId)) {
+        const error = new Error('attempt_id must be a valid UUID.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const attempt = await prisma.quizAttempt.findFirst({
+        where: {
+            id: attemptId,
+            studentId,
+            status: ATTEMPT_STATUS.SUBMITTED,
+            gradingStatus: ATTEMPT_GRADING_STATUS.GRADED
+        },
+        include: {
+            quiz: {
+                include: {
+                    batch: {
+                        select: {
+                            id: true,
+                            name: true,
+                            batchName: true
+                        }
+                    },
+                    questions: {
+                        orderBy: { orderNo: 'asc' }
+                    }
+                }
+            },
+            answers: true
+        }
+    });
+
+    if (!attempt) {
+        const error = new Error('Result not found.');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    const answerByQuestionId = new Map((attempt.answers || []).map((answer) => [answer.questionId, answer]));
+    const questions = (attempt.quiz?.questions || []).map((question) => {
+        const answer = answerByQuestionId.get(question.id) || null;
+        const options = Array.isArray(question.mcqOptions) ? question.mcqOptions : [];
+
+        return {
+            id: question.id,
+            order_no: Number(question.orderNo || 0),
+            type: question.questionType,
+            question_text: question.questionText || '',
+            question_image_data: question.questionImageData || null,
+            marks: Number(question.marks || 0),
+            options,
+            correct_option_index:
+                question.correctOptionIndex === null || question.correctOptionIndex === undefined
+                    ? null
+                    : Number(question.correctOptionIndex),
+            answer: {
+                selected_option_index:
+                    answer?.mcqSelectedOptionIndex === null || answer?.mcqSelectedOptionIndex === undefined
+                        ? null
+                        : Number(answer.mcqSelectedOptionIndex),
+                broad_text_answer: answer?.broadTextAnswer || '',
+                answer_file_data: answer?.answerFileData || null,
+                answer_file_name: answer?.answerFileName || null,
+                answer_file_type: answer?.answerFileType || null
+            },
+            review: {
+                awarded_marks:
+                    answer?.awardedMarks === null || answer?.awardedMarks === undefined
+                        ? 0
+                        : Number(answer.awardedMarks),
+                teacher_explanation: answer?.teacherExplanation || '',
+                review_file_data: answer?.reviewFileData || null,
+                review_file_name: answer?.reviewFileName || null,
+                review_file_type: answer?.reviewFileType || null
+            }
+        };
+    });
+
+    const totalMarks = questions.reduce((sum, question) => sum + Number(question.marks || 0), 0);
+
+    return {
+        attempt_id: attempt.id,
+        attempt_number: Number(attempt.attemptNumber || 0),
+        obtained_marks: Number(attempt.totalAwardedMarks || 0),
+        full_marks: totalMarks,
+        percentage: totalMarks > 0 ? Number(((Number(attempt.totalAwardedMarks || 0) / totalMarks) * 100).toFixed(2)) : 0,
+        submitted_at: toISOStringOrNull(attempt.submittedAt),
+        graded_at: toISOStringOrNull(attempt.gradedAt),
+        quiz: {
+            id: attempt.quiz.id,
+            title: attempt.quiz.title,
+            description: attempt.quiz.description || '',
+            batch_name: attempt.quiz?.batch?.batchName || attempt.quiz?.batch?.name || null
+        },
+        questions
+    };
+};
+
 export const getStudentQuizzes = async (
     prisma,
     {

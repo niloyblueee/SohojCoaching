@@ -2,8 +2,10 @@ import { Router } from 'express';
 import { requireAnyRole, requireAuth } from '../middleware/auth.js';
 import {
     createQuizController,
+    getStudentResultDetailController,
     getTeacherQuizAttemptReviewController,
     getStudentQuizAttemptController,
+    getStudentResultsController,
     getStudentQuizzesController,
     getTeacherQuizScriptsController,
     getTeacherQuizzesController,
@@ -30,6 +32,8 @@ export const createQuizRoutes = (prisma) => {
     );
     router.post('/teacher/quizzes', requireAnyRole(['teacher', 'admin']), createQuizController(prisma));
     router.get('/student/quizzes', requireAnyRole(['student']), getStudentQuizzesController(prisma));
+    router.get('/student/results', requireAnyRole(['student']), getStudentResultsController(prisma));
+    router.get('/student/results/:attemptId', requireAnyRole(['student']), getStudentResultDetailController(prisma));
     router.post(
         '/student/quizzes/:quizId/attempts/start',
         requireAnyRole(['student']),

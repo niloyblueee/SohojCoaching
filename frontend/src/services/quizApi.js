@@ -35,6 +35,14 @@ export const getStudentQuizzes = (batchId) => {
     return apiFetch(`/student/quizzes${query}`, { withAuth: true });
 };
 
+export const getStudentResults = (batchId) => {
+    const query = batchId ? `?batch_id=${encodeURIComponent(batchId)}` : '';
+    return apiFetch(`/student/results${query}`, { withAuth: true });
+};
+
+export const getStudentResultDetail = (attemptId) =>
+    apiFetch(`/student/results/${encodeURIComponent(attemptId)}`, { withAuth: true });
+
 export const startStudentQuizAttempt = (quizId) =>
     apiFetch(`/student/quizzes/${encodeURIComponent(quizId)}/attempts/start`, {
         method: 'POST',

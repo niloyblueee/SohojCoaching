@@ -254,7 +254,7 @@ function StudentQuizAttemptView() {
                         type="radio"
                         name={`answer-${question.id}`}
                         disabled={!isEditable || submitting}
-                        checked={Number(answers[question.id]?.selected_option_index) === optionIndex}
+                        checked={answers[question.id]?.selected_option_index === optionIndex}
                         onChange={() =>
                           updateAnswer(question.id, (prev) => ({
                             ...prev,
