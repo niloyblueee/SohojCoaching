@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { randomUUID } from 'crypto';
 import { requireAdmin, requireAnyRole, requireAuth } from '../middleware/auth.js';
 import { isUuid } from '../utils/validators.js';
+import { getBatchStudentCounts } from '../services/batchAnalyticsService.js';
 
 export const createAdminRoutes = (prisma) => {
     const adminRoutes = Router();
@@ -158,9 +159,32 @@ export const createAdminRoutes = (prisma) => {
         }
     });
 
+    // GET /api/admin/analytics/batch-counts
+    adminRoutes.get('/admin/analytics/batch-counts', requireAdmin, async (_req, res) => {
+        try {
+            const batches = await getBatchStudentCounts(prisma);
+            const totalStudents = batches.reduce((sum, row) => sum + Number(row.student_count || 0), 0);
+
+            return res.json({
+                generated_at: new Date().toISOString(),
+                summary: {
+                    total_batches: batches.length,
+                    total_active_students: totalStudents
+                },
+                batches
+            });
+        } catch (error) {
+            return res.status(500).json({ error: 'Failed to load batch-wise student counts.' });
+        }
+    });
+
     // GET /api/batch-overview
     adminRoutes.get('/batch-overview', requireAdmin, async (_req, res) => {
         try {
+            const batchCounts = await getBatchStudentCounts(prisma);
+            const countByBatch = new Map(
+                batchCounts.map((row) => [row.batch_id, Number(row.student_count || 0)])
+            );
             const rows = await prisma.$queryRaw`
                 SELECT
                     b.id,
@@ -226,7 +250,7 @@ export const createAdminRoutes = (prisma) => {
                     id: row.id,
                     batch_name: row.batch_name,
                     course: row.course,
-                    total_students: Number(row.total_students || 0),
+                    total_students: countByBatch.get(row.id) ?? Number(row.total_students || 0),
                     attendance_rate: attendanceRate,
                     fee_status: feeStatus,
                     fee_total_payable: feeTotalPayable,

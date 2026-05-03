@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import BatchManagementPage from '../BatchManagementPage';
 import BatchOverviewPage from '../BatchOverviewPage';
+import BatchStudentCountPage from '../BatchStudentCountPage';
 import ManagementDashboard from '../ManagementDashboard';
 import MaterialTeacherView from '../MaterialTeacherView';
 import ScriptUploadView from '../ScriptUploadView';
@@ -28,6 +29,7 @@ function AdminLayout({ user, onLogout }) {
                     <NavLink to="/admin/students">Students</NavLink>
                     <NavLink to="/admin/batches">Batches</NavLink>
                     <NavLink to="/admin/batch-overview">Batch Overview</NavLink>
+                    <NavLink to="/admin/batch-counts">Batch wise student Count</NavLink>
                     <NavLink to="/admin/materials">Materials</NavLink>
                     <NavLink to="/admin/scripts">Exam Scripts</NavLink>
                     <NavLink to="/admin/fees">Fee Management</NavLink>
@@ -40,6 +42,7 @@ function AdminLayout({ user, onLogout }) {
                         <Route path="/admin/students" element={<StudentList />} />
                         <Route path="/admin/batches" element={<BatchManagementPage />} />
                         <Route path="/admin/batch-overview" element={<BatchOverviewPage />} />
+                        <Route path="/admin/batch-counts" element={<BatchStudentCountPage />} />
                         <Route path="/admin/materials" element={<MaterialTeacherView />} />
                         <Route path="/admin/scripts" element={<ScriptUploadView />} />
                         <Route path="/admin/fees" element={<FeeManagement />} />

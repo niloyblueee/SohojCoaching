@@ -1,0 +1,206 @@
+.batch-count-page {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 0.5rem;
+  color: #1f2a44;
+  font-family: 'Nunito', sans-serif;
+}
+
+.batch-count-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.batch-count-kicker {
+  margin: 0;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #4965a8;
+  font-weight: 700;
+}
+
+.batch-count-header h2 {
+  margin: 0.2rem 0 0.4rem;
+  color: #203a73;
+  font-family: 'Chakra Petch', sans-serif;
+}
+
+.batch-count-sub {
+  margin: 0;
+  color: #3c527f;
+  max-width: 60ch;
+}
+
+.batch-count-refresh {
+  border: 0;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0.45rem 0.95rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: #f7f9ff;
+  background: linear-gradient(120deg, #2d3b7f, #3a79c1);
+  cursor: pointer;
+}
+
+.batch-count-refresh:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.batch-count-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.batch-count-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #c7d7f5;
+  border-radius: 12px;
+  padding: 0.85rem;
+}
+
+.batch-count-card-accent {
+  background: linear-gradient(120deg, #1f9e79, #2fb090);
+  color: #fff;
+  border-color: transparent;
+}
+
+.batch-count-card p {
+  margin: 0;
+  color: inherit;
+  font-size: 0.88rem;
+}
+
+.batch-count-card strong {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-size: 1.45rem;
+  color: inherit;
+}
+
+.batch-count-panel {
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid #c7d7f5;
+  border-radius: 12px;
+  padding: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.batch-count-panel h3 {
+  margin: 0 0 0.7rem;
+  color: #203a73;
+}
+
+.batch-count-status {
+  margin: 0;
+  color: #3f5689;
+}
+
+.batch-count-chart {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.batch-count-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(140px, 3fr) minmax(40px, 80px);
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.batch-count-label span {
+  display: block;
+  font-weight: 600;
+  color: #26365d;
+}
+
+.batch-count-bar {
+  background: #eff4ff;
+  border-radius: 999px;
+  height: 12px;
+  overflow: hidden;
+  border: 1px solid #d6e3fb;
+}
+
+.batch-count-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3a79c1, #2d3b7f);
+  box-shadow: 0 6px 12px rgba(45, 59, 127, 0.25);
+}
+
+.batch-count-value {
+  font-weight: 700;
+  color: #203a73;
+  text-align: right;
+}
+
+.batch-count-table-wrap {
+  overflow: auto;
+}
+
+.batch-count-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.batch-count-table th,
+.batch-count-table td {
+  text-align: left;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid #d5e0f8;
+  font-size: 0.92rem;
+}
+
+.batch-count-table th {
+  background: #ecf2ff;
+  color: #2b4f97;
+  font-weight: 700;
+}
+
+.batch-count-table td {
+  color: #27395f;
+}
+
+.batch-count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.24rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.batch-count-pill-open {
+  background: rgba(31, 158, 121, 0.18);
+  color: #1f9e79;
+}
+
+.batch-count-pill-full {
+  background: rgba(224, 85, 111, 0.18);
+  color: #c23d5a;
+}
+
+@media (max-width: 900px) {
+  .batch-count-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .batch-count-row {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .batch-count-value {
+    text-align: left;
+  }
+}

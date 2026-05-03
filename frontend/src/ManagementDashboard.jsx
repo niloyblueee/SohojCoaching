@@ -79,6 +79,7 @@ const ManagementDashboard = () => {
       });
       setEnrollForm({ studentId: '' });
       await fetchBatchMembers(selectedBatchId);
+      window.dispatchEvent(new CustomEvent('enrollment-changed'));
       setMessage('Student enrolled successfully.');
     } catch (error) {
       setMessage(error.message);
@@ -116,6 +117,7 @@ const ManagementDashboard = () => {
     try {
       await apiFetch(`/enrollments/${enrollmentId}`, { method: 'DELETE', withAuth: true });
       await fetchBatchMembers(selectedBatchId);
+      window.dispatchEvent(new CustomEvent('enrollment-changed'));
       setMessage('Student removed from batch.');
     } catch (error) {
       setMessage(error.message);

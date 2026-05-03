@@ -6,7 +6,7 @@ MyScriptsView Niloy FR 18
 Batches Overview FR 5
 Due Monitoring FR 8 
 Monthly Income Dashboard + Fee summary  FR 9 + fr 25
-
+BatchStudentCount.jsx FR 24
 =================================================================
 📅 Sprint 1 – Core Academic Structure
 
@@ -58,6 +58,6 @@ FR-19: Study Material Upload ✅
 
 FR-20: Material Download ✅ 
  
-FR-24: Batch-wise Student Count
+FR-24: Batch-wise Student Count  ✅ 
 
 FR-25: Fee Summary ✅
