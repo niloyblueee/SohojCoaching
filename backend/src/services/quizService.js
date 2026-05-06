@@ -1497,188 +1497,102 @@ export const getStudentQuizAttempt = async (
     return mapAttemptResponse(attempt);
 };
 
-export const submitQuizAttempt = async (
-    prisma,
-    {
-        studentId,
-        attemptId,
-        answers
-    }
-) => {
-    if (!isUuid(studentId)) {
-        const error = new Error('Unable to resolve student identity.');
-        error.statusCode = 401;
-        throw error;
-    }
-    if (!isUuid(attemptId)) {
-        const error = new Error('attempt_id must be a valid UUID.');
-        error.statusCode = 400;
-        throw error;
-    }
-    if (!Array.isArray(answers)) {
-        const error = new Error('answers must be an array.');
-        error.statusCode = 400;
-        throw error;
-    }
-
-    const attempt = await prisma.quizAttempt.findFirst({
-        where: {
-            id: attemptId,
-            studentId
-        },
+export const submitQuizAttempt = async (prisma, { studentId, attemptId, answers }) => {
+    const attempt = await prisma.quizAttempt.findUnique({
+        where: { id: attemptId },
         include: {
             quiz: {
                 include: {
-                    questions: {
-                        orderBy: { orderNo: 'asc' }
-                    }
+                    questions: true
                 }
             }
         }
     });
 
-    if (!attempt) {
+    if (!attempt || attempt.studentId !== studentId) {
         const error = new Error('Quiz attempt not found.');
         error.statusCode = 404;
         throw error;
     }
 
-    if (attempt.status !== ATTEMPT_STATUS.IN_PROGRESS) {
-        const error = new Error('This attempt is already finished.');
+    if (attempt.status === ATTEMPT_STATUS.SUBMITTED) {
+        const error = new Error('This attempt has already been submitted.');
         error.statusCode = 400;
         throw error;
     }
 
-    if (isExpiredByClock(attempt)) {
-        await prisma.quizAttempt.update({
-            where: { id: attempt.id },
-            data: { status: ATTEMPT_STATUS.EXPIRED }
-        });
-        const error = new Error('Time is over for this quiz attempt.');
-        error.statusCode = 400;
-        throw error;
-    }
+    let autoScore = 0;
+    let hasBroadQuestions = false;
 
-    const questionById = new Map(attempt.quiz.questions.map((question) => [question.id, question]));
-    const normalizedAnswers = [];
+    const processedAnswers = (answers || []).map((ans) => {
+        const question = attempt.quiz.questions.find((q) => q.id === ans.question_id);
+        if (!question) return null;
 
-    for (const rawAnswer of answers) {
-        const questionId = normalizeString(rawAnswer?.question_id);
-        if (!isUuid(questionId) || !questionById.has(questionId)) {
-            const error = new Error('answers contains invalid question_id.');
-            error.statusCode = 400;
-            throw error;
-        }
+        let awardedMarks = null; 
 
-        const question = questionById.get(questionId);
         if (question.questionType === QUESTION_TYPE.MCQ) {
-            const selectedOption =
-                rawAnswer?.selected_option_index === null ||
-                rawAnswer?.selected_option_index === undefined ||
-                rawAnswer?.selected_option_index === ''
-                    ? null
-                    : toSafeInt(rawAnswer?.selected_option_index, -1);
-
-            if (selectedOption === null) {
-                continue;
-            }
-
-            const options = Array.isArray(question.mcqOptions) ? question.mcqOptions : [];
-            if (selectedOption < 0 || selectedOption >= options.length) {
-                const error = new Error(`Invalid selected_option_index for question ${question.orderNo}.`);
-                error.statusCode = 400;
-                throw error;
-            }
-
-            normalizedAnswers.push({
-                attemptId: attempt.id,
-                questionId,
-                mcqSelectedOptionIndex: selectedOption,
-                broadTextAnswer: null,
-                answerFileData: null,
-                answerFileName: null,
-                answerFileType: null
-            });
-            continue;
+            const isCorrect = question.correctOptionIndex === ans.selected_option_index;
+            awardedMarks = isCorrect ? Number(question.marks || 0) : 0;
+            autoScore += awardedMarks;
+        } else {
+            hasBroadQuestions = true;
         }
 
-        const broadTextAnswer = normalizeString(rawAnswer?.broad_text_answer);
-        if (broadTextAnswer.length > MAX_BROAD_ANSWER_TEXT_LENGTH) {
-            const error = new Error(`broad_text_answer too long for question ${question.orderNo}.`);
-            error.statusCode = 400;
-            throw error;
-        }
+        return {
+            questionId: question.id,
+            mcqSelectedOptionIndex: ans.selected_option_index,
+            broadTextAnswer: ans.broad_text_answer || null,
+            awardedMarks: awardedMarks,
+        };
+    }).filter(Boolean);
 
-        const answerFileData = validateAnswerFileData(rawAnswer?.answer_file_data);
-        const answerFileName = normalizeString(rawAnswer?.answer_file_name);
-        const answerFileType = normalizeString(rawAnswer?.answer_file_type);
-
-        if (!broadTextAnswer && !answerFileData) {
-            continue;
-        }
-
-        normalizedAnswers.push({
-            attemptId: attempt.id,
-            questionId,
-            mcqSelectedOptionIndex: null,
-            broadTextAnswer: broadTextAnswer || null,
-            answerFileData,
-            answerFileName: answerFileName ? answerFileName.slice(0, 255) : null,
-            answerFileType: answerFileType ? answerFileType.slice(0, 120) : null
-        });
-    }
-
-    const answeredQuestionIds = normalizedAnswers.map((answer) => answer.questionId);
-    const allQuestionIds = attempt.quiz.questions.map((question) => question.id);
-
-    await prisma.$transaction(async (tx) => {
-        for (const answer of normalizedAnswers) {
+    return await prisma.$transaction(async (tx) => {
+        for (const data of processedAnswers) {
             await tx.quizAnswer.upsert({
                 where: {
                     attemptId_questionId: {
-                        attemptId: answer.attemptId,
-                        questionId: answer.questionId
+                        attemptId: attemptId,
+                        questionId: data.questionId
                     }
                 },
-                create: answer,
                 update: {
-                    mcqSelectedOptionIndex: answer.mcqSelectedOptionIndex,
-                    broadTextAnswer: answer.broadTextAnswer,
-                    answerFileData: answer.answerFileData,
-                    answerFileName: answer.answerFileName,
-                    answerFileType: answer.answerFileType
+                    mcqSelectedOptionIndex: data.mcqSelectedOptionIndex,
+                    broadTextAnswer: data.broadTextAnswer,
+                    awardedMarks: data.awardedMarks,
+                },
+                create: {
+                    attemptId: attemptId,
+                    ...data
                 }
             });
         }
 
-        const unansweredQuestionIds = allQuestionIds.filter((id) => !answeredQuestionIds.includes(id));
-        if (unansweredQuestionIds.length > 0) {
-            await tx.quizAnswer.deleteMany({
-                where: {
-                    attemptId: attempt.id,
-                    questionId: { in: unansweredQuestionIds }
-                }
-            });
-        }
+        const finalGradingStatus = hasBroadQuestions 
+            ? ATTEMPT_GRADING_STATUS.PENDING 
+            : ATTEMPT_GRADING_STATUS.GRADED;
 
-        await tx.quizAttempt.update({
-            where: { id: attempt.id },
+        const updatedAttempt = await tx.quizAttempt.update({
+            where: { id: attemptId },
             data: {
                 status: ATTEMPT_STATUS.SUBMITTED,
                 submittedAt: new Date(),
-                gradingStatus: ATTEMPT_GRADING_STATUS.PENDING,
-                totalAwardedMarks: 0,
-                gradedBy: null,
-                gradedAt: null
+                totalAwardedMarks: autoScore,
+                gradingStatus: finalGradingStatus,
+                gradedAt: hasBroadQuestions ? null : new Date()
+            },
+            include: {
+                quiz: {
+                    include: {
+                        batch: true,
+                        teacher: true,
+                        questions: true
+                    }
+                },
+                answers: true
             }
         });
-    });
 
-    return {
-        message: 'Quiz submitted successfully.',
-        attempt_id: attempt.id,
-        answered_count: normalizedAnswers.length,
-        total_questions: allQuestionIds.length,
-        submitted_at: new Date().toISOString()
-    };
+        return mapAttemptResponse(updatedAttempt);
+    });
 };
+
