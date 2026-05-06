@@ -46,7 +46,7 @@
 
 .quiz-builder,
 .quiz-list-panel {
-  border: 1px solid #cad8f4;
+  border: 1px solid #5f77a8;
   background: rgba(255, 255, 255, 0.84);
   border-radius: 14px;
   box-shadow: 0 10px 22px rgba(34, 56, 103, 0.12);
@@ -225,7 +225,7 @@
 
 .quiz-list-panel h3 {
   margin: 0;
-  color: #24497f;
+  color: #001e4b;
 }
 
 .quiz-empty {
@@ -319,15 +319,15 @@
 }
 
 .quiz-metric-card {
-  border: 1px solid #cddcf8;
+  border: 1px solid #000000;
   border-radius: 12px;
   padding: 0.62rem 0.72rem;
-  background: linear-gradient(160deg, #f8fbff, #f0f5ff);
+  background: linear-gradient(160deg, #7997be, #8ea2ca);
 }
 
 .quiz-metric-card p {
   margin: 0;
-  color: #46639a;
+  color: #001c4f;
   font-size: 0.79rem;
   font-weight: 700;
 }
@@ -337,7 +337,7 @@
   margin-top: 0.18rem;
   font-size: 1.3rem;
   font-family: 'Chakra Petch', sans-serif;
-  color: #21497f;
+  color: #000000;
 }
 
 .quiz-submit-row-left {

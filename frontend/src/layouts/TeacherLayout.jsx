@@ -4,6 +4,8 @@ import ScriptUploadView from '../ScriptUploadView';
 import AttendanceTeacherAnalytics from '../AttendanceTeacherAnalytics';
 import TeacherQuizCreationView from '../TeacherQuizCreationView';
 import TeacherQuizScriptsView from '../TeacherQuizScriptsView';
+import TeacherLeaderboardView from '../TeacherLeaderboardView'; 
+
 
 function TeacherLayout({ user, onLogout }) {
     return (
@@ -27,6 +29,7 @@ function TeacherLayout({ user, onLogout }) {
                     <NavLink to="/teacher/attendance">Attendance</NavLink>
                     <NavLink to="/teacher/quizz-creation">Quizz Creation</NavLink>
                     <NavLink to="/teacher/quizz-scripts">Quizz Scripts</NavLink>
+                    <NavLink to="/teacher/leaderboard">Leaderboard</NavLink>
                 </nav>
 
                 <main className="role-content">
@@ -38,6 +41,7 @@ function TeacherLayout({ user, onLogout }) {
                         <Route path="/teacher/quizzes" element={<Navigate to="/teacher/quizz-creation" replace />} />
                         <Route path="/teacher/quizz-creation" element={<TeacherQuizCreationView />} />
                         <Route path="/teacher/quizz-scripts" element={<TeacherQuizScriptsView />} />
+                        <Route path="/teacher/leaderboard" element={<TeacherLeaderboardView currentUser={user} />} />
                         <Route path="*" element={<Navigate to="/teacher/materials" replace />} />
                     </Routes>
                 </main>

@@ -211,13 +211,26 @@ function AttendanceTeacherAnalytics() {
         }, null);
     }, [courseWise]);
 
-    const topStudent = useMemo(() => {
-        if (!studentWise.length) return null;
-        return studentWise.reduce((best, row) => {
-            if (!best || row.attendance_rate > best.attendance_rate) return row;
-            return best;
-        }, null);
-    }, [studentWise]);
+    const performanceSummary = useMemo(() => {
+        if (!studentWise.length) return null; //
+        const rates = studentWise.map(s => s.attendance_rate);
+        const maxRate = Math.max(...rates); //
+        const minRate = Math.min(...rates); //
+        const bestNames = studentWise
+            .filter(s => s.attendance_rate === maxRate)
+            .map(s => s.student_name)
+            .join(', ');
+
+        const worstNames = studentWise
+            .filter(s => s.attendance_rate === minRate)
+            .map(s => s.student_name)
+            .join(', ');
+
+        return {
+            best: `Best record holder(s): ${bestNames} with ${toPercent(maxRate)}`,
+            worst: `Worst record holder(s): ${worstNames} with ${toPercent(minRate)}`
+        };
+    }, [studentWise]); 
 
     return (
         <section className="attendance-shell attendance-shell-teacher">
@@ -440,11 +453,11 @@ function AttendanceTeacherAnalytics() {
                         </table>
                     </div>
                 )}
-
-                {topStudent && (
-                    <p className="attendance-highlight">
-                        Top student in current scope: <strong>{topStudent.student_name}</strong> with {toPercent(topStudent.attendance_rate)}.
-                    </p>
+                {performanceSummary && (
+                    <div className="attendance-highlight" style={{ lineHeight: '1.6' }}>
+                        <p style={{ margin: 0 }}><strong>{performanceSummary.best}.</strong></p>
+                        <p style={{ margin: 0 }}><strong>{performanceSummary.worst}.</strong></p>
+                    </div>
                 )}
             </article>
         </section>

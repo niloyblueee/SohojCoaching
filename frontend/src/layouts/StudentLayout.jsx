@@ -6,6 +6,7 @@ import StudentFeeOverview from '../components/student/StudentFeeOverview';
 import StudentQuizAttendView from '../StudentQuizAttendView';
 import StudentQuizAttemptView from '../StudentQuizAttemptView';
 import StudentQuizResultView from '../StudentQuizResultView';
+import StudentLeaderboardView from '../StudentLeaderboardView';
 
 function StudentLayout({ user, onLogout }) {
     return (
@@ -30,6 +31,7 @@ function StudentLayout({ user, onLogout }) {
                     <NavLink to="/student/attend-quiz">Attend Quiz</NavLink>
                     <NavLink to="/student/results">Result</NavLink>
                     <NavLink to="/student/fees">Fees</NavLink>
+                    <NavLink to="/student/leaderboard">Leaderboard</NavLink>
                 </nav>
 
                 <main className="role-content">
@@ -43,6 +45,7 @@ function StudentLayout({ user, onLogout }) {
                         <Route path="/student/attend-quiz/:attemptId" element={<StudentQuizAttemptView />} />
                         <Route path="/student/results" element={<StudentQuizResultView currentUser={user} />} />
                         <Route path="/student/fees" element={<StudentFeeOverview />} />
+                        <Route path="/student/leaderboard" element={<StudentLeaderboardView currentUser={user} />} />
                         <Route path="*" element={<Navigate to="/student/materials" replace />} />
                     </Routes>
                 </main>

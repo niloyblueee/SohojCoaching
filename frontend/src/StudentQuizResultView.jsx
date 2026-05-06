@@ -103,11 +103,38 @@ function StudentQuizResultView({ currentUser }) {
     <section className="quiz-page">
       <header className="quiz-header">
         <div>
-          <p className="quiz-kicker">FR-14: Result Updates</p>
           <h2>Result</h2>
           <p>Track graded quiz performance with clean metrics and open each checked script in detail.</p>
         </div>
       </header>
+
+      <section className="quiz-list-panel">
+        <div className="quiz-filter-bar">
+          <label className="quiz-filter-item">
+            <span>Batch</span>
+            <select value={selectedBatch} onChange={(event) => setSelectedBatch(event.target.value)}>
+              <option value="">All Batches</option>
+              {batches.map((batch) => (
+                <option key={batch.id} value={batch.id}>
+                  {batch.name || batch.batch_name}
+                </option>
+              ))}
+            </select>
+          </label>
+          
+          <div className="quiz-filter-actions">
+            <button type="button" className="quiz-btn ghost" onClick={() => loadResults(selectedBatch)} disabled={loading}>
+              {loading ? 'Refreshing...' : 'Refresh Results'}
+            </button>
+          </div>
+        </div>
+
+        {status && <p className="quiz-status quiz-status-error">{status}</p>}
+        {!status && topResult && (
+          <p className="quiz-status">
+            Top performance currently in <strong>{topResult.quiz_title}</strong> ({toPercent(topResult.percentage)}).
+          </p>
+        )}
 
       <section className="quiz-metrics-grid quiz-results-metrics-grid">
         <article className="quiz-metric-card">
@@ -129,34 +156,6 @@ function StudentQuizResultView({ currentUser }) {
           <strong>{toPercent(metrics.best_percentage)}</strong>
         </article>
       </section>
-
-      <section className="quiz-list-panel">
-        <div className="quiz-filter-bar">
-          <label className="quiz-filter-item">
-            <span>Batch</span>
-            <select value={selectedBatch} onChange={(event) => setSelectedBatch(event.target.value)}>
-              <option value="">All Batches</option>
-              {batches.map((batch) => (
-                <option key={batch.id} value={batch.id}>
-                  {batch.name || batch.batch_name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="quiz-filter-actions">
-            <button type="button" className="quiz-btn ghost" onClick={() => loadResults(selectedBatch)} disabled={loading}>
-              {loading ? 'Refreshing...' : 'Refresh Results'}
-            </button>
-          </div>
-        </div>
-
-        {status && <p className="quiz-status quiz-status-error">{status}</p>}
-        {!status && topResult && (
-          <p className="quiz-status">
-            Top performance currently in <strong>{topResult.quiz_title}</strong> ({toPercent(topResult.percentage)}).
-          </p>
-        )}
 
         {loading && <p className="quiz-empty">Loading results...</p>}
         {!loading && !status && results.length === 0 && (
